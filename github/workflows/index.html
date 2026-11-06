@@ -40,7 +40,7 @@ input[type=checkbox]{width:22px;height:22px;accent-color:var(--ac);flex:none}
 <script>
 var D=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'],N={A:'الأسبوع «أ»',B:'الأسبوع «ب»'};
 var S=null,view='home',msg='',ready=null;
-var F={type:'d',t:'08:00',n:'',w:'',date:'',days:[0,1,2,3,4,5,6],wk:'',pre:true,rep:false,st:'',ln:'',li:''};
+var F={type:'d',t:'08:00',n:'',w:'',date:'',days:[0,1,2,3,4,5,6],wk:'',pre:true,rep:true,st:'',ln:'',li:''};
 function blank(){var o={};for(var i=0;i<7;i++)o[i]={on:false,t:''};return o}
 function fix(){S.weeks=S.weeks||{A:blank(),B:blank()};S.rem=S.rem||[];S.log=S.log||S.done||{};S.lists=S.lists||[];S.eve=S.eve||{on:true,t:'20:00'};if(S.ref===undefined)S.ref=null}
 try{S=JSON.parse(localStorage.getItem('edt'))}catch(e){}
@@ -65,7 +65,7 @@ function isDone(r,k){return !!(S.log[k]&&S.log[k][r.id])}
 function findRem(id){return S.rem.filter(function(r){return String(r.id)===String(id)})[0]}
 function rk(r){if(!r.k){S.seq=(S.seq||0)+1;r.k=S.seq;save()}return r.k}
 function nid(r){return(Number(r.id)%2000000000)||1}
-function tt(r){return r.w?'⏰ '+r.w:'⏰ تذكير'}
+function tt(r){return r.w?'⏰ '+r.w:'⏰ تذكير دواء'}
 function stats(){
  var now=new Date(),streak=0,cnt=0,tot=0,brk=false;
  for(var i=0;i<60;i++){
@@ -83,7 +83,7 @@ function ensure(){
  if(!LN)return Promise.resolve(false);
  if(!ready)ready=(async function(){
   var p=await LN.requestPermissions();if(p.display!=='granted'){say('الإذن غير ممنوح ('+p.display+'). فعّل الإشعارات من إعدادات الهاتف.');return false}
-  try{await LN.createChannel({id:'meds',name:'التذكيرات',importance:5,vibration:true,visibility:1})}catch(e){}
+  try{await LN.createChannel({id:'meds',name:'التذكيرات والأدوية',importance:5,vibration:true,visibility:1})}catch(e){}
   try{await LN.registerActionTypes({types:[{id:'REM',actions:[{id:'done',title:'✓ تم'},{id:'snooze',title:'⏰ بعد 10 دقائق'}]}]})}catch(e){}
   return true})();
  return ready}
@@ -107,10 +107,15 @@ async function schedRem(r){
    for(i=0;i<days;i++){
     d=new Date(now.getFullYear(),now.getMonth(),now.getDate()+i,h,m,0);
     var y=dk(d);if(d<=now||!due(r,d)||isDone(r,y))continue;
-    var n=(dn(d)%40)*4;L.push(mk(r,b+n,d,r.n,y));
-    if(r.rep)for(j=1;j<=3;j++)L.push(mk(r,b+n+j,new Date(d.getTime()+j*6e5),'(تذكير) '+r.n,y))}}
+    var n=(dn(d)%40)*4;
+    // الإشعار الأساسي في وقته المحدد
+    L.push(mk(r,b+n,d,r.n,y));
+    // تكرار الإشعار كل 10 دقائق (3 مرات إضافية) حتى يضغط المستخدم "تم"
+    if(r.rep) for(j=1;j<=3;j++) L.push(mk(r,b+n+j,new Date(d.getTime()+j*6e5),'(تذكير متكرر) '+r.n,y));
+   }
+  }
   if(L.length)await LN.schedule({notifications:L});
-  var pe=await LN.getPending();say('تمت جدولة «'+r.n+'» (إجمالي الإشعارات المجدولة: '+pe.notifications.length+')')
+  var pe=await LN.getPending();say('تمت جدولة «'+r.n+'» مع التكرار (المجدولة: '+pe.notifications.length+')')
  }catch(e){say('خطأ: '+String(e&&e.message||e))}}
 async function schedEve(){
  if(!LN||S.ref===null)return;
@@ -146,7 +151,7 @@ async function testNotif(){
  if(!LN){sy('خاصية الإشعارات غير متوفرة.');return}
  try{
   if(!await ensure())return;
-  await LN.schedule({notifications:[{id:999999,title:'⏰ اختبار',body:'الإشعارات تعمل',channelId:'meds',schedule:{at:new Date(Date.now()+5000),allowWhileIdle:true}}]});
+  await LN.schedule({notifications:[{id:999999,title:'⏰ اختبار التكرار',body:'سيتكرر الإشعار حتى تلغيه',channelId:'meds',schedule:{at:new Date(Date.now()+5000),allowWhileIdle:true}}]});
   sy('أغلق التطبيق وانتظر 5 ثوانٍ.')
  }catch(e){sy('خطأ: '+String(e&&e.message||e))}}
 var exactDenied=false;
@@ -173,7 +178,7 @@ if(LN){try{LN.addListener('localNotificationActionPerformed',function(a){
 /* ---------- UI ---------- */
 function chip(attr,label,on){return'<button '+attr+(on?' class="a"':'')+'>'+label+'</button>'}
 function remForm(){
- var o=F.type==='o',h='<div class="card"><div class="big s17">➕ تذكير جديد</div><div class="row"><select data-f="type"><option value="d"'+(o?'':' selected')+'>متكرر</option><option value="o"'+(o?' selected':'')+'>موعد مرة واحدة</option></select>';
+ var o=F.type==='o',h='<div class="card"><div class="big s17">➕ تذكير جديد (مع التكرار)</div><div class="row"><select data-f="type"><option value="d"'+(o?'':' selected')+'>متكرر</option><option value="o"'+(o?' selected':'')+'>موعد مرة واحدة</option></select>';
  if(o)h+='<input type="date" data-f="date" value="'+F.date+'">';
  h+='<input type="time" data-f="t" value="'+F.t+'"></div><div class="row"><input type="text" data-f="n" placeholder="اسم الدواء أو المهمة أو الموعد" value="'+esc(F.n)+'"></div><div class="chips">';
  ['دواء','فيتامين','ماء','موعد طبيب'].forEach(function(c){h+=chip('data-chip="'+c+'"',c)});
@@ -184,14 +189,14 @@ function remForm(){
   h+='<div class="hint">الأيام:</div><div class="chips">';
   D.forEach(function(x,i){h+=chip('data-day="'+i+'"',x,F.days.indexOf(i)>=0)});
   h+='</div><div class="row"><select data-f="wk"><option value="">كل الأسابيع</option><option value="A"'+(F.wk==='A'?' selected':'')+'>الأسبوع «أ» فقط</option><option value="B"'+(F.wk==='B'?' selected':'')+'>الأسبوع «ب» فقط</option></select><input type="number" data-f="st" placeholder="عدد الحبات (اختياري)" value="'+F.st+'" style="width:100%"></div>';
-  h+='<label class="row"><input type="checkbox" data-f="rep" '+(F.rep?'checked':'')+'><span>كرّر كل 10 دقائق (3 مرات) حتى أضغط «تم»</span></label>'
+  h+='<label class="row"><input type="checkbox" data-f="rep" '+(F.rep?'checked':'')+'><span>تكرار التنبيه كل 10 دقائق (3 مرات) حتى يضغط المريض «تم»</span></label>'
  }else h+='<label class="row"><input type="checkbox" data-f="pre" '+(F.pre?'checked':'')+'><span>نبّهني قبله بيوم وقبله بساعة</span></label>';
  return h+'<button class="btn p mt" data-add="1" style="width:100%">+ إضافة</button><p class="hint" id="ns">'+esc(msg)+'</p><div class="row"><button class="btn" data-test="1">🔔 اختبار</button><button class="btn" data-diag="1">🩺 فحص</button><button class="btn" data-exact="1">⚙️ المنبهات</button></div></div>'}
 function remList(){
  var h='<div class="card"><div class="big s17">كل التذكيرات</div>';
  if(!S.rem.length)return h+'<p class="hint">لا توجد تذكيرات.</p></div>';
  sortedRem(S.rem).forEach(function(r){
-  var info=r.date?r.date+(r.pre?' · 🔔':''):(r.days&&r.days.length<7?r.days.map(function(i){return D[i].slice(0,3)}).join('،'):'يوميًا')+(r.wk?' · «'+(r.wk==='A'?'أ':'ب')+'»':'')+(r.rep?' · 🔁':'')+(r.st!=null?' · بقي '+r.st:'');
+  var info=r.date?r.date+(r.pre?' · 🔔':''):(r.days&&r.days.length<7?r.days.map(function(i){return D[i].slice(0,3)}).join('،'):'يوميًا')+(r.wk?' · «'+(r.wk==='A'?'أ':'ب')+'»':'')+(r.rep?' · 🔁 تكرار مفعل':'')+(r.st!=null?' · بقي '+r.st:'');
   h+='<div class="row"><span class="day" style="width:58px">'+r.t+'</span><span class="sub" style="color:inherit">'+esc(r.n)+(r.w?' ('+esc(r.w)+')':'')+'<br><small class="offt">'+esc(info)+'</small></span><button class="btn" style="flex:none;padding:6px 12px" data-del="'+r.id+'">حذف</button></div>'});
  return h+'</div>'}
 function homeView(now,t){
