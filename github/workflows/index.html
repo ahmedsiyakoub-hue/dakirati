@@ -149,8 +149,22 @@ async function testNotif(){
   await LN.schedule({notifications:[{id:999999,title:'⏰ اختبار',body:'الإشعارات تعمل',channelId:'meds',schedule:{at:new Date(Date.now()+5000),allowWhileIdle:true}}]});
   sy('أغلق التطبيق وانتظر 5 ثوانٍ.')
  }catch(e){sy('خطأ: '+String(e&&e.message||e))}}
+var exactDenied=false;
+async function checkExact(){
+ if(!LN)return;
+ try{var x=await LN.checkExactNotificationSetting(),was=exactDenied;exactDenied=(x.exact_alarm==='denied');
+  if(was&&!exactDenied)init();
+  if(was!==exactDenied)render()}catch(e){}}
+async function exactSettings(){try{await LN.changeExactNotificationSetting()}catch(e){}}
+async function diag(){
+ var t=[];
+ try{var p=await LN.checkPermissions();t.push('الإشعارات: '+p.display)}catch(e){t.push('الإشعارات: ؟')}
+ try{var x=await LN.checkExactNotificationSetting();t.push('المنبهات الدقيقة: '+x.exact_alarm)}catch(e){}
+ try{var pe=await LN.getPending();t.push('المجدولة: '+pe.notifications.length)}catch(e){}
+ say(t.join(' | '))}
 async function init(){
  if(!LN)return;
+ await checkExact();
  for(var i=0;i<S.rem.length;i++)await schedRem(S.rem[i]);
  await schedEve()}
 if(LN){try{LN.addListener('localNotificationActionPerformed',function(a){
@@ -172,7 +186,7 @@ function remForm(){
   h+='</div><div class="row"><select data-f="wk"><option value="">كل الأسابيع</option><option value="A"'+(F.wk==='A'?' selected':'')+'>الأسبوع «أ» فقط</option><option value="B"'+(F.wk==='B'?' selected':'')+'>الأسبوع «ب» فقط</option></select><input type="number" data-f="st" placeholder="عدد الحبات (اختياري)" value="'+F.st+'" style="width:100%"></div>';
   h+='<label class="row"><input type="checkbox" data-f="rep" '+(F.rep?'checked':'')+'><span>كرّر كل 10 دقائق (3 مرات) حتى أضغط «تم»</span></label>'
  }else h+='<label class="row"><input type="checkbox" data-f="pre" '+(F.pre?'checked':'')+'><span>نبّهني قبله بيوم وقبله بساعة</span></label>';
- return h+'<button class="btn p mt" data-add="1" style="width:100%">+ إضافة</button><p class="hint" id="ns">'+esc(msg)+'</p><button class="btn" data-test="1" style="width:100%">🔔 اختبار إشعار الآن</button></div>'}
+ return h+'<button class="btn p mt" data-add="1" style="width:100%">+ إضافة</button><p class="hint" id="ns">'+esc(msg)+'</p><div class="row"><button class="btn" data-test="1">🔔 اختبار</button><button class="btn" data-diag="1">🩺 فحص</button><button class="btn" data-exact="1">⚙️ المنبهات</button></div></div>'}
 function remList(){
  var h='<div class="card"><div class="big s17">كل التذكيرات</div>';
  if(!S.rem.length)return h+'<p class="hint">لا توجد تذكيرات.</p></div>';
@@ -185,6 +199,7 @@ function homeView(now,t){
  h+=e.on?'<div class="big on">✓ يدرس اليوم</div>':'<div class="big offt">لا يدرس اليوم</div>';
  if(e.on&&e.t)h+='<div>'+esc(e.t)+'</div>';
  h+='</div>';
+ if(exactDenied)h+='<div class="card"><div class="wr">⚠️ المنبهات الدقيقة غير مفعّلة، وقد تتأخر الإشعارات أو لا تصل.</div><button class="btn p mt" data-exact="1" style="width:100%">تفعيلها الآن</button><p class="hint">فعّل «المنبهات والتذكيرات» لهذا التطبيق ثم ارجع إليه.</p></div>';
  var low=S.rem.filter(function(r){return r.st!=null&&r.st<=5});
  if(low.length){h+='<div class="card">';low.forEach(function(r){h+='<div class="wr">⚠️ ينقص: '+esc(r.n)+' (بقي '+r.st+')</div>'});h+='</div>'}
  var L=sortedRem(S.rem.filter(function(r){return due(r,now)})),st=stats();
@@ -243,6 +258,8 @@ document.addEventListener('click',function(ev){
    S.rem.push(r);save();F.n='';F.st='';render();schedRem(r)}
   else if(q.del){var dr=findRem(q.del);if(dr)unschedRem(dr);S.rem=S.rem.filter(function(r){return String(r.id)!==q.del});save();render()}
   else if(q.test)testNotif();
+  else if(q.diag)diag();
+  else if(q.exact)exactSettings();
   else if(q.addlist){
    var items=(F.li||'').split('\n').map(function(s){return s.trim()}).filter(Boolean);
    if(!(F.ln||'').trim()||!items.length)return;
@@ -265,6 +282,7 @@ function onField(ev){
  else if(c.type==='text'&&q.k){S.weeks[q.k][q.i].t=c.value;save()}
  else if(q.eve==='t'&&c.type==='time'){S.eve.t=c.value||'20:00';save();schedEve()}}
 document.addEventListener('input',onField);document.addEventListener('change',onField);
+document.addEventListener('visibilitychange',function(){if(!document.hidden)checkExact()});
 render();init();
 </script>
 </body>
