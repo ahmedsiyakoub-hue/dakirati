@@ -65,30 +65,38 @@ function remCard(){
 function remEditor(){
  var h='<div class="card"><div class="big" style="font-size:17px">⏰ تذكيرات الدواء والمهام</div><div class="row"><input type="time" id="rt" value="08:00"><input type="text" id="rn" placeholder="اسم الدواء أو المهمة"></div><div class="chips">';
  ['دواء','فيتامين','ماء','مهمة'].forEach(function(c){h+='<button data-chip="'+c+'">'+c+'</button>'});
- h+='</div><button class="btn p" data-add="1" style="width:100%">+ إضافة تذكير يومي</button><p class="hint">في تطبيق أندرويد يصلك إشعار يومي في الوقت المحدد حتى لو كان التطبيق مغلقًا.</p>';
+ h+='</div><button class="btn p" data-add="1" style="width:100%">+ إضافة تذكير يومي</button><p class="hint">في تطبيق أندرويد يصلك إشعار يومي في الوقت المحدد حتى لو كان التطبيق مغلقًا.</p><button class="btn" data-test="1" style="width:100%">🔔 اختبار إشعار الآن</button><p class="hint" id="ns"></p>';
  sortedRem().forEach(function(r){h+='<div class="row"><span class="day" style="width:60px">'+r.t+'</span><span class="sub" style="color:inherit">'+esc(r.n)+'</span><button class="btn" style="flex:none;padding:6px 12px" data-del="'+r.id+'">حذف</button></div>'});
  return h+'</div>'}
 function showBan(r){
  var b=document.getElementById('ban');b.textContent='⏰ '+r.t+' — '+r.n;b.style.display='block';
  try{navigator.vibrate&&navigator.vibrate([300,150,300])}catch(e){}
  try{if(window.Notification&&Notification.permission==='granted')new Notification('تذكير',{body:r.n})}catch(e){}}
-var LN=(window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.LocalNotifications)||null;
+var CAP=window.Capacitor,NATIVE=!!(CAP&&CAP.isNativePlatform&&CAP.isNativePlatform()),LN=null,lastErr='';
+if(NATIVE){try{LN=(CAP.Plugins&&CAP.Plugins.LocalNotifications)||(CAP.registerPlugin?CAP.registerPlugin('LocalNotifications'):null)}catch(e){lastErr=String(e)}}
 function nid(r){return(Number(r.id)%2000000000)||1}
 async function schedRem(r){
  if(!LN)return;
  try{
-  var p=await LN.requestPermissions();if(p.display!=='granted')return;
+  var p=await LN.requestPermissions();if(p.display!=='granted'){lastErr='permission:'+p.display;return}
   try{await LN.createChannel({id:'meds',name:'التذكيرات',importance:5,vibration:true,visibility:1})}catch(e){}
   var a=r.t.split(':');
   await LN.schedule({notifications:[{id:nid(r),title:'⏰ تذكير',body:r.n,channelId:'meds',schedule:{on:{hour:parseInt(a[0],10),minute:parseInt(a[1],10)},allowWhileIdle:true}}]});
- }catch(e){}}
+ }catch(e){lastErr=String(e&&e.message||e)}}
 async function unschedRem(r){if(!LN)return;try{await LN.cancel({notifications:[{id:nid(r)}]})}catch(e){}}
 function findRem(id){return S.rem.filter(function(r){return String(r.id)===String(id)})[0]}
-function phoneAlarm(r){var a=r.t.split(':');
- location.href='intent:#Intent;action=android.intent.action.SET_ALARM;i.android.intent.extra.alarm.HOUR='+parseInt(a[0],10)+';i.android.intent.extra.alarm.MINUTES='+parseInt(a[1],10)+';S.android.intent.extra.alarm.MESSAGE='+encodeURIComponent(r.n)+';end'}
-function icsFile(r){var d=new Date(),a=r.t.split(':'),st=d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+'T'+a[0]+a[1]+'00',n=r.n.replace(/[\r\n,;]/g,' ');
- var t=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//jadwal//AR','BEGIN:VEVENT','UID:'+r.id+'@jadwal','DTSTAMP:'+st,'DTSTART:'+st,'DURATION:PT5M','RRULE:FREQ=DAILY','SUMMARY:'+n,'BEGIN:VALARM','TRIGGER:PT0S','ACTION:DISPLAY','DESCRIPTION:'+n,'END:VALARM','END:VEVENT','END:VCALENDAR'].join('\r\n');
- try{var u=URL.createObjectURL(new Blob([t],{type:'text/calendar'})),l=document.createElement('a');l.href=u;l.download='reminder.ics';document.body.appendChild(l);l.click();l.remove()}catch(e){}}
+async function testNotif(){
+ var el=document.getElementById('ns');function say(m){if(el)el.textContent=m}
+ if(!NATIVE){say('أنت لا تستعمل تطبيق أندرويد (وضع المتصفح).');return}
+ if(!LN){say('خاصية الإشعارات غير متوفرة داخل التطبيق. '+lastErr);return}
+ try{
+  var p=await LN.requestPermissions();
+  if(p.display!=='granted'){say('الإذن غير ممنوح ('+p.display+'). فعّل الإشعارات من إعدادات الهاتف.');return}
+  try{await LN.createChannel({id:'meds',name:'التذكيرات',importance:5,vibration:true,visibility:1})}catch(e){}
+  await LN.schedule({notifications:[{id:999999,title:'⏰ اختبار',body:'إذا رأيت هذا فالإشعارات تعمل',channelId:'meds',schedule:{at:new Date(Date.now()+5000),allowWhileIdle:true}}]});
+  var pe=await LN.getPending();
+  say('تمت الجدولة (عدد المجدولة: '+pe.notifications.length+'). أغلق التطبيق وانتظر 5 ثوانٍ.');
+ }catch(e){say('خطأ: '+String(e&&e.message||e))}}
 function render(){
  var el=document.getElementById('app'),h='';
  if(S.ref===null){
@@ -120,8 +128,7 @@ document.addEventListener('click',function(ev){
   else if(b.dataset.chip){document.getElementById('rn').value=b.dataset.chip}
   else if(b.dataset.add){var t=document.getElementById('rt').value||'08:00',n=document.getElementById('rn').value.trim()||'تذكير';var nr={id:Date.now()%2000000000,t:t,n:n};S.rem.push(nr);save();schedRem(nr);
    try{if(window.Notification&&Notification.permission==='default')Notification.requestPermission()}catch(e){}render()}
-  else if(b.dataset.alarm){var q=findRem(b.dataset.alarm);if(q)phoneAlarm(q)}
-  else if(b.dataset.ics){var q2=findRem(b.dataset.ics);if(q2)icsFile(q2)}
+  else if(b.dataset.test){testNotif()}
   else if(b.dataset.del){var dr=findRem(b.dataset.del);if(dr)unschedRem(dr);S.rem=S.rem.filter(function(r){return String(r.id)!==b.dataset.del});save();render()}}
  var c=ev.target;
  if(c.type==='checkbox'&&c.dataset.k){S.weeks[c.dataset.k][c.dataset.i].on=c.checked;save()}
