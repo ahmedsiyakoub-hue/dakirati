@@ -65,7 +65,7 @@ function remCard(){
 function remEditor(){
  var h='<div class="card"><div class="big" style="font-size:17px">⏰ تذكيرات الدواء والمهام</div><div class="row"><input type="time" id="rt" value="08:00"><input type="text" id="rn" placeholder="اسم الدواء أو المهمة"></div><div class="chips">';
  ['دواء','فيتامين','ماء','مهمة'].forEach(function(c){h+='<button data-chip="'+c+'">'+c+'</button>'});
- h+='</div><button class="btn p" data-add="1" style="width:100%">+ إضافة تذكير يومي</button><p class="hint">في تطبيق أندرويد يصلك إشعار يومي في الوقت المحدد حتى لو كان التطبيق مغلقًا.</p><button class="btn" data-test="1" style="width:100%">🔔 اختبار إشعار الآن</button><p class="hint" id="ns"></p>';
+ h+='</div><button class="btn p" data-add="1" style="width:100%">+ إضافة تذكير يومي</button><p class="hint">في تطبيق أندرويد يصلك إشعار يومي في الوقت المحدد حتى لو كان التطبيق مغلقًا.</p><button class="btn" data-test="1" style="width:100%">🔔 اختبار إشعار الآن</button><p class="hint" id="ns">'+esc(msg)+'</p>';
  sortedRem().forEach(function(r){h+='<div class="row"><span class="day" style="width:60px">'+r.t+'</span><span class="sub" style="color:inherit">'+esc(r.n)+'</span><button class="btn" style="flex:none;padding:6px 12px" data-del="'+r.id+'">حذف</button></div>'});
  return h+'</div>'}
 function showBan(r){
@@ -75,15 +75,21 @@ function showBan(r){
 var CAP=window.Capacitor,NATIVE=!!(CAP&&CAP.isNativePlatform&&CAP.isNativePlatform()),LN=null,lastErr='';
 if(NATIVE){try{LN=(CAP.Plugins&&CAP.Plugins.LocalNotifications)||(CAP.registerPlugin?CAP.registerPlugin('LocalNotifications'):null)}catch(e){lastErr=String(e)}}
 function nid(r){return(Number(r.id)%2000000000)||1}
+var msg='';
+function say(m){msg=m;var el=document.getElementById('ns');if(el)el.textContent=m}
+function rk(r){if(!r.k){S.seq=(S.seq||0)+1;r.k=S.seq;save()}return r.k}
 async function schedRem(r){
  if(!LN)return;
  try{
-  var p=await LN.requestPermissions();if(p.display!=='granted'){lastErr='permission:'+p.display;return}
+  var p=await LN.requestPermissions();if(p.display!=='granted'){say('الإذن غير ممنوح ('+p.display+')');return}
   try{await LN.createChannel({id:'meds',name:'التذكيرات',importance:5,vibration:true,visibility:1})}catch(e){}
-  var a=r.t.split(':');
-  await LN.schedule({notifications:[{id:nid(r),title:'⏰ تذكير',body:r.n,channelId:'meds',schedule:{on:{hour:parseInt(a[0],10),minute:parseInt(a[1],10)},allowWhileIdle:true}}]});
- }catch(e){lastErr=String(e&&e.message||e)}}
-async function unschedRem(r){if(!LN)return;try{await LN.cancel({notifications:[{id:nid(r)}]})}catch(e){}}
+  var a=r.t.split(':'),h=parseInt(a[0],10),m=parseInt(a[1],10),now=new Date(),days=Math.max(3,Math.min(30,Math.floor(400/Math.max(1,S.rem.length)))),list=[],base=rk(r)*100;
+  for(var i=0;i<days;i++){var d=new Date(now.getFullYear(),now.getMonth(),now.getDate()+i,h,m,0);if(d>now)list.push({id:base+i,title:'⏰ تذكير',body:r.n,channelId:'meds',schedule:{at:d,allowWhileIdle:true}})}
+  if(list.length)await LN.schedule({notifications:list});
+  var pe=await LN.getPending();
+  say('تمت جدولة «'+r.n+'» الساعة '+r.t+' (إجمالي المجدولة: '+pe.notifications.length+')');
+ }catch(e){say('خطأ: '+String(e&&e.message||e))}}
+async function unschedRem(r){if(!LN)return;try{var ids=[{id:nid(r)}];for(var i=0;i<100;i++)ids.push({id:rk(r)*100+i});await LN.cancel({notifications:ids})}catch(e){}}
 function findRem(id){return S.rem.filter(function(r){return String(r.id)===String(id)})[0]}
 async function testNotif(){
  var el=document.getElementById('ns');function say(m){if(el)el.textContent=m}
