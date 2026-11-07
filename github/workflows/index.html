@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>جدول ابني - المنظومة الشاملة</title>
+<title>جدول ابني</title>
 <style>
 :root{--bg:#f6f5f1;--card:#fff;--tx:#1f2328;--mut:#6b7280;--ac:#1d6f5f;--acs:#dff1ec;--off:#e9e7e1;--bd:#e3e1da;--wr:#b45309;--danger:#dc2626}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15181a;--card:#1f2326;--tx:#ececec;--mut:#9aa3ab;--ac:#4fc3a8;--acs:#1e3a34;--off:#2a2f33;--bd:#2f353a;--wr:#fbbf24;--danger:#ef4444;color-scheme:dark}}
@@ -34,7 +34,7 @@ input[type=checkbox]{width:22px;height:22px;accent-color:var(--ac);flex:none}
 .chips button{border:1px solid var(--bd);background:var(--bg);color:var(--tx);border-radius:999px;padding:4px 12px;font:inherit;font-size:13px}
 .done{text-decoration:line-through;color:var(--mut)}
 .mt{margin-top:8px}
-.sos-btn{background:var(--danger);color:#fff;font-size:17px;font-weight:bold;padding:12px;border-radius:14px;width:100%;border:none;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;margin-bottom:10px}
+.sos-btn{background:var(--danger);color:#fff;font-size:17px;font-weight:bold;padding:12px;border-radius:14px;width:100%;border:none;margin-bottom:8px}
 .ice-card{border:2px solid var(--danger);background:var(--card);border-radius:14px;padding:12px;margin-bottom:12px}
 </style>
 </head>
@@ -42,29 +42,21 @@ input[type=checkbox]{width:22px;height:22px;accent-color:var(--ac);flex:none}
 <div class="w" id="app"></div>
 <script>
 var D=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'],N={A:'الأسبوع «أ»',B:'الأسبوع «ب»'};
-var S=null,view='home',msg='',ready=null,vaultUnlocked=false;
-var F={type:'d',t:'08:00',n:'',w:'',date:'',days:[0,1,2,3,4,5,6],wk:'',pre:true,rep:true,st:'',ln:'',li:''};
-
+var S=null,view='home',msg='',ready=null,vaultUnlocked=false,exactDenied=false;
+var F={type:'d',t:'08:00',n:'',date:'',days:[0,1,2,3,4,5,6],pre:true,rep:true};
 function blank(){var o={};for(var i=0;i<7;i++)o[i]={on:false,t:''};return o}
 function fix(){
- S.weeks=S.weeks||{A:blank(),B:blank()};
- S.rem=S.rem||[];
- S.log=S.log||{};
- S.vitals=S.vitals||[];
- S.homework=S.homework||[];
- S.vault=S.vault||{pin:'',info:''};
- S.sos=S.sos||{name:'الطوارئ',phone:''};
- S.ice=S.ice||{name:'',blood:'',allergies:'',notes:''};
- S.eve=S.eve||{on:false,t:'20:00'};
- S.seq=S.seq||0;
- if(S.ref===undefined)S.ref=null
-}
+ S.weeks=S.weeks||{A:blank(),B:blank()};S.rem=S.rem||[];S.log=S.log||{};S.vitals=S.vitals||[];S.homework=S.homework||[];
+ S.vault=S.vault||{pin:'',info:''};S.ice=S.ice||{name:'',blood:'',allergies:'',notes:''};
+ S.eve=S.eve||{on:false,t:'20:00'};S.seq=S.seq||0;
+ if(!Array.isArray(S.sos))S.sos=(S.sos&&S.sos.phone)?[{name:S.sos.name||'طوارئ',phone:S.sos.phone}]:[];
+ if(S.ref===undefined)S.ref=null}
 try{S=JSON.parse(localStorage.getItem('edt'))}catch(e){}
 if(!S||typeof S!=='object')S={};fix();
 function save(){try{localStorage.setItem('edt',JSON.stringify(S))}catch(e){}}
 function sun(d){var x=new Date(d.getFullYear(),d.getMonth(),d.getDate());x.setDate(x.getDate()-x.getDay());return x}
 function wt(d){var w=Math.round((sun(d)-new Date(S.ref))/604800000);return(((w%2)+2)%2===0)?'A':'B'}
-function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
 function pad(n){return(n<10?'0':'')+n}
 function dk(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
 function dnS(s){var p=s.split('-');return Math.floor(Date.UTC(+p[0],p[1]-1,+p[2])/864e5)}
@@ -74,15 +66,12 @@ function due(r,d){
  if(r.date)return dk(d)===r.date;
  if(r.c&&dk(d)<r.c)return false;
  if(r.days&&r.days.indexOf(d.getDay())<0)return false;
- if(r.wk&&S.ref!==null&&wt(d)!==r.wk)return false;
- return true
-}
+ return true}
 function sortedRem(l){return l.slice().sort(function(a,b){return a.t<b.t?-1:a.t>b.t?1:0})}
 function isDone(r,k){return !!(S.log[k]&&S.log[k][r.id])}
 function findRem(id){return S.rem.filter(function(r){return String(r.id)===String(id)})[0]}
 function rk(r){if(!r.k){S.seq=(S.seq||0)+1;r.k=S.seq;save()}return r.k}
-function tt(r){return r.w?'⏰ '+r.w:'⏰ تذكير دواء'}
-
+function tt(r){return r.w?'⏰ '+r.w:'⏰ تذكير'}
 /* ---------- notifications ---------- */
 var CAP=window.Capacitor,NATIVE=!!(CAP&&CAP.isNativePlatform&&CAP.isNativePlatform()),LN=null;
 if(NATIVE){try{LN=(CAP.Plugins&&CAP.Plugins.LocalNotifications)||(CAP.registerPlugin?CAP.registerPlugin('LocalNotifications'):null)}catch(e){}}
@@ -90,16 +79,15 @@ function say(m){msg=m;var el=document.getElementById('ns');if(el)el.textContent=
 function ensure(){
  if(!LN)return Promise.resolve(false);
  if(!ready)ready=(async function(){
-  var p=await LN.requestPermissions();if(p.display!=='granted')return false;
+  var p=await LN.requestPermissions();if(p.display!=='granted'){say('الإذن غير ممنوح. فعّل الإشعارات من إعدادات الهاتف.');return false}
   try{await LN.createChannel({id:'meds',name:'التذكيرات والأدوية',importance:5,vibration:true,visibility:1})}catch(e){}
   try{await LN.registerActionTypes({types:[{id:'REM',actions:[{id:'done',title:'✓ تم'},{id:'snooze',title:'⏰ بعد 10 دقائق'}]}]})}catch(e){}
   return true})();
- return ready
-}
+ return ready}
 function mk(r,id,at,body,day){return{id:id,title:tt(r),body:body,channelId:'meds',actionTypeId:'REM',extra:{rid:r.id,day:day},schedule:{at:at,allowWhileIdle:true}}}
 async function unschedRem(r){
  if(!LN)return;
- try{var ids=[],b=rk(r)*10000,i;for(i=0;i<1000;i++)ids.push({id:b+i});await LN.cancel({notifications:ids})}catch(e){}}
+ try{var ids=[],b=rk(r)*10000,i,j;for(i=0;i<30;i++)for(j=0;j<4;j++)ids.push({id:b+i*20+j});for(i=800;i<803;i++)ids.push({id:b+i});await LN.cancel({notifications:ids})}catch(e){}}
 async function schedRem(r){
  if(!await ensure())return;
  try{
@@ -108,26 +96,18 @@ async function schedRem(r){
   if(r.date){
    var p=r.date.split('-');d=new Date(+p[0],p[1]-1,+p[2],h,m,0);
    if(d>now&&!isDone(r,r.date))L.push(mk(r,b+800,d,r.n,r.date));
+   if(r.pre){var d1=new Date(d.getTime()-864e5),d2=new Date(d.getTime()-36e5);
+    if(d1>now)L.push(mk(r,b+801,d1,'غدًا: '+r.n,r.date));
+    if(d2>now)L.push(mk(r,b+802,d2,'بعد ساعة: '+r.n,r.date))}
   }else{
-   var days=14;
-   for(i=0;i<days;i++){
+   for(i=0;i<(r.rep?10:30);i++){
     d=new Date(now.getFullYear(),now.getMonth(),now.getDate()+i,h,m,0);
-    var y=dk(d);
-    if(d <= now) continue;
-    if(!due(r,d) || isDone(r,y)) continue;
-    var baseId=b + (i * 20);
-    L.push(mk(r, baseId, d, r.n, y));
-    if(r.rep){
-     for(j=1; j<=3; j++){
-      var repeatTime = new Date(d.getTime() + j * 6e5);
-      if(repeatTime > now) L.push(mk(r, baseId + j, repeatTime, '(تنبيه متكرر) ' + r.n, y));
-     }
-    }
-   }
-  }
+    var y=dk(d);if(d<=now||!due(r,d)||isDone(r,y))continue;
+    L.push(mk(r,b+i*20,d,r.n,y));
+    if(r.rep)for(j=1;j<=3;j++)L.push(mk(r,b+i*20+j,new Date(d.getTime()+j*6e5),'(تنبيه متكرر) '+r.n,y))}}
   if(L.length)await LN.schedule({notifications:L});
- }catch(e){}}
-
+  var pe=await LN.getPending();say('تمت جدولة «'+r.n+'» (إجمالي الإشعارات المجدولة: '+pe.notifications.length+')')
+ }catch(e){say('خطأ: '+String(e&&e.message||e))}}
 async function schedEve(){
  if(!LN||S.ref===null)return;
  if(!await ensure())return;
@@ -141,258 +121,174 @@ async function schedEve(){
    L.push({id:1900000000+dn(d)%14,title:'📚 المدرسة',body:'غدًا ('+D[g.getDay()]+') '+(x.on?'يدرس'+(x.t?' — '+x.t:''):'عطلة'),channelId:'meds',schedule:{at:d,allowWhileIdle:true}})}
   if(L.length)await LN.schedule({notifications:L})
  }catch(e){}}
-
-async function cancelFollow(r,day){if(!LN)return;try{await unschedRem(r);await schedRem(r);}catch(e){}}
-function markDone(r,day){S.log[day]=S.log[day]||{};if(S.log[day][r.id])return;S.log[day][r.id]=true;save();cancelFollow(r,day)}
-function unmark(r,day){if(S.log[day]&&S.log[day][r.id]){S.log[day][r.id]=false;save()}}
-
+function markDone(r,day){S.log[day]=S.log[day]||{};if(S.log[day][r.id])return;S.log[day][r.id]=true;save();if(LN)schedRem(r)}
+function unmark(r,day){if(S.log[day]&&S.log[day][r.id]){S.log[day][r.id]=false;save();if(LN)schedRem(r)}}
+async function snooze(r,day){
+ if(!await ensure())return;
+ try{await LN.schedule({notifications:[mk(r,1800000000+Math.floor(Math.random()*1e6),new Date(Date.now()+6e5),r.n,day)]})}catch(e){}}
+async function checkExact(){
+ if(!LN)return;
+ try{var x=await LN.checkExactNotificationSetting(),was=exactDenied;exactDenied=(x.exact_alarm==='denied');
+  if(was&&!exactDenied)init();
+  if(was!==exactDenied)render()}catch(e){}}
+async function exactSettings(){try{await LN.changeExactNotificationSetting()}catch(e){}}
+async function diag(){
+ if(!LN){say('خاصية الإشعارات غير متوفرة (أنت خارج تطبيق أندرويد).');return}
+ var t=[];
+ try{var p=await LN.checkPermissions();t.push('الإشعارات: '+p.display)}catch(e){}
+ try{var x=await LN.checkExactNotificationSetting();t.push('المنبهات الدقيقة: '+x.exact_alarm)}catch(e){}
+ try{var pe=await LN.getPending();t.push('المجدولة: '+pe.notifications.length)}catch(e){}
+ say(t.join(' | '))}
+async function testNotif(){
+ if(!LN){say('خاصية الإشعارات غير متوفرة.');return}
+ try{if(!await ensure())return;
+  await LN.schedule({notifications:[{id:999999,title:'⏰ اختبار',body:'الإشعارات تعمل',channelId:'meds',schedule:{at:new Date(Date.now()+5000),allowWhileIdle:true}}]});
+  say('أغلق التطبيق وانتظر 5 ثوانٍ.')}catch(e){say('خطأ: '+String(e&&e.message||e))}}
 async function init(){
  if(!LN)return;
+ await checkExact();
+ try{if(await ensure()){var pe=await LN.getPending(),old=pe.notifications.filter(function(n){return n.id<1800000000});if(old.length)await LN.cancel({notifications:old.map(function(n){return{id:n.id}})})}}catch(e){}
  for(var i=0;i<S.rem.length;i++)await schedRem(S.rem[i]);
- await schedEve()
-}
-
-/* ---------- UI VIEWS ---------- */
+ await schedEve()}
+if(LN){try{LN.addListener('localNotificationActionPerformed',function(a){
+ var x=(a.notification&&a.notification.extra)||{},r=findRem(x.rid);if(!r)return;
+ if(a.actionId==='done'){markDone(r,x.day);render()}else if(a.actionId==='snooze'){snooze(r,x.day)}})}catch(e){}}
+/* ---------- views ---------- */
 function chip(attr,label,on){return'<button '+attr+(on?' class="a"':'')+'>'+label+'</button>'}
-
 function homeView(now,t){
- var e=S.weeks[t][now.getDay()],k=dk(now);
- var h='';
-
+ var e=S.weeks[t][now.getDay()],k=dk(now),h='';
  if(S.ice.name){
-  h+='<div class="ice-card"><div class="big s17" style="color:var(--danger)">🪪 بطاقة التعريف الطبية (ICE)</div>';
-  h+='<div><b>الاسم:</b> '+esc(S.ice.name)+' | <b>فصيلة الدم:</b> '+esc(S.ice.blood||'غير محدد')+'</div>';
+  h+='<div class="ice-card"><div class="big s17" style="color:var(--danger)">🪪 بطاقة التعريف الطبية (ICE)</div><div><b>الاسم:</b> '+esc(S.ice.name)+' | <b>فصيلة الدم:</b> '+esc(S.ice.blood||'غير محدد')+'</div>';
   if(S.ice.allergies)h+='<div><b>الحساسية:</b> '+esc(S.ice.allergies)+'</div>';
   if(S.ice.notes)h+='<div><b>ملاحظات:</b> '+esc(S.ice.notes)+'</div>';
-  h+='</div>';
- }
-
- if(S.sos.phone){
-  h+='<a href="tel:'+esc(S.sos.phone)+'" style="text-decoration:none"><button class="sos-btn">🚨 اتصال طوارئ سريع بـ ('+esc(S.sos.name)+')</button></a>';
- }
-
+  h+='</div>'}
+ S.sos.forEach(function(c){h+='<a href="tel:'+esc(c.phone)+'" style="text-decoration:none"><button class="sos-btn">🚨 اتصال: '+esc(c.name)+' ('+esc(c.phone)+')</button></a>'});
+ if(exactDenied)h+='<div class="card"><div class="wr">⚠️ المنبهات الدقيقة غير مفعّلة، وقد تتأخر الإشعارات أو لا تصل.</div><button class="btn p mt" data-exact="1" style="width:100%">تفعيلها الآن</button></div>';
  h+='<div class="card"><span class="badge">'+N[t]+'</span><div class="big">'+D[now.getDay()]+' '+now.getDate()+'/'+(now.getMonth()+1)+'</div>';
  h+=e.on?'<div class="big on">✓ يدرس اليوم</div>':'<div class="big offt">لا يدرس اليوم</div>';
  if(e.on&&e.t)h+='<div>'+esc(e.t)+'</div>';
  h+='</div>';
-
  var L=sortedRem(S.rem.filter(function(r){return due(r,now)}));
  h+='<div class="card"><div class="big s17">⏰ تذكيراتي اليوم</div>';
  if(!L.length)h+='<p class="hint">لا تذكيرات اليوم.</p>';
- L.forEach(function(r){var d=isDone(r,k);h+='<label class="row"><input type="checkbox" data-done="'+r.id+'" '+(d?'checked':'')+'><span class="day" style="width:58px">'+r.t+'</span><span class="sub'+(d?' done':'')+'">'+esc(r.n)+(r.w?' ('+esc(r.w)+')':'')+'</span></label>'});
- h+='</div>';
- return h;
-}
-
-function vitalsView(){
- var h='<div class="card"><div class="big s17">📊 سجل القياسات الحيوية</div>';
- h+='<div class="row"><input type="number" id="v_sys" placeholder="الضغط العالي (مثلاً 120)"><input type="number" id="v_dia" placeholder="الضغط المنخفض (80)"></div>';
- h+='<div class="row"><input type="number" id="v_glu" placeholder="السكر (مغ/دسل)"><input type="number" step="0.1" id="v_temp" placeholder="الحرارة (م°)"></div>';
- h+='<div class="row"><input type="number" step="0.1" id="v_weight" placeholder="الوزن (كغ)"></div>';
- h+='<button class="btn p mt" data-addvital="1" style="width:100%">+ تسجيل القياس</button></div>';
-
- h+='<div class="card"><div class="big s17">السجلات الأخيرة</div>';
- if(!S.vitals.length)h+='<p class="hint">لا توجد قياسات مسجلة.</p>';
- S.vitals.slice().reverse().forEach(function(v,idx){
-  h+='<div class="row"><span class="sub"><b>'+v.date+'</b><br>';
-  if(v.sys)h+='ضغط: '+v.sys+'/'+v.dia+' | ';
-  if(v.glu)h+='سكر: '+v.glu+' | ';
-  if(v.temp)h+='حرارة: '+v.temp+'° | ';
-  if(v.weight)h+='وزن: '+v.weight+'كغ';
-  h+='</span><button class="btn danger" style="flex:none" data-delvital="'+(S.vitals.length-1-idx)+'">حذف</button></div>';
- });
- h+='<button class="btn mt" data-expvitals="1" style="width:100%">💾 تصدير سجل القياسات كملف</button>';
- h+='</div>';
- return h;
-}
-
-function homeworkView(){
- var h='<div class="card"><div class="big s17">📚 منبه الواجبات المدرسية</div>';
- h+='<div class="row"><input type="text" id="hw_title" placeholder="عنوان الواجب (مثلاً: تمارين الرياضيات)"></div>';
- h+='<div class="row"><input type="text" id="hw_subject" placeholder="المادة الدراسية"></div>';
- h+='<div class="row"><span>تاريخ التسليم:</span><input type="date" id="hw_date"><input type="time" id="hw_time" value="18:00"></div>';
- h+='<button class="btn p mt" data-addhw="1" style="width:100%">+ إضافة واجب وتنبيه</button></div>';
-
- h+='<div class="card"><div class="big s17">قائمة الواجبات</div>';
- if(!S.homework.length)h+='<p class="hint">لا توجد واجبات حالية.</p>';
- S.homework.forEach(function(hw,i){
-  h+='<div class="row"><span class="sub"><b>'+esc(hw.title)+'</b> ('+esc(hw.subject)+')<br><small class="offt">تسليم: '+hw.dueDate+' الساعة '+hw.t+'</small></span>';
-  h+='<button class="btn danger" style="flex:none" data-delhw="'+i+'">تم / حذف</button></div>';
- });
- h+='</div>';
- return h;
-}
-
-function vaultView(){
- var h='<div class="card"><div class="big s17">🔒 صندوق المعلومات المهمة</div>';
- if(!S.vault.pin){
-  h+='<p class="hint">أنشئ كوداً سرياً لحماية معلوماتك الحساسة:</p>';
-  h+='<div class="row"><input type="password" id="new_pin" placeholder="أدخل كود سري من 4 أرقام"></div>';
-  h+='<button class="btn p mt" data-setpin="1" style="width:100%">حفظ الكود السري</button></div>';
-  return h;
- }
- if(!vaultUnlocked){
-  h+='<div class="row"><input type="password" id="enter_pin" placeholder="أدخل الكود السري لفتح الصندوق"></div>';
-  h+='<button class="btn p mt" data-unlock="1" style="width:100%">🔓 فتح الصندوق</button></div>';
-  return h;
- }
- h+='<p class="hint">الصندوق مفتوح:</p>';
- h+='<textarea id="vault_info" rows="5" placeholder="أرقام التأمين، فصائل الدم، ملاحظات خاصة...">'+esc(S.vault.info)+'</textarea>';
- h+='<div class="row"><button class="btn p" data-savevault="1">حفظ المعلومات</button><button class="btn" data-lock="1">🔒 إغلاق الصندوق</button></div></div>';
- return h;
-}
-
-function settingsView(){
- var h='<div class="card"><div class="big s17">🚨 إعدادات زر الطوارئ السريع</div>';
- h+='<div class="row"><input type="text" id="sos_name" placeholder="اسم جهة الاتصال (مثلاً الابن / الطبيب)" value="'+esc(S.sos.name)+'"></div>';
- h+='<div class="row"><input type="text" id="sos_phone" placeholder="رقم الهاتف (مثلاً 0661000000)" value="'+esc(S.sos.phone)+'"></div>';
- h+='<button class="btn p mt" data-savesos="1" style="width:100%">حفظ إعدادات الطوارئ</button></div>';
-
- h+='<div class="card"><div class="big s17">🪪 بطاقة التعريف الطبية (ICE)</div>';
- h+='<div class="row"><input type="text" id="ice_name" placeholder="الاسم الكامل" value="'+esc(S.ice.name)+'"></div>';
- h+='<div class="row"><input type="text" id="ice_blood" placeholder="فصيلة الدم (مثلاً O+)" value="'+esc(S.ice.blood)+'"></div>';
- h+='<div class="row"><input type="text" id="ice_allergies" placeholder="الحساسية (أدوية، أطعمة)" value="'+esc(S.ice.allergies)+'"></div>';
- h+='<div class="row"><textarea id="ice_notes" rows="2" placeholder="ملاحظات صحية حرجة...">'+esc(S.ice.notes)+'</textarea></div>';
- h+='<button class="btn p mt" data-saveice="1" style="width:100%">حفظ بطاقة ICE</button></div>';
- return h;
-}
-
-function remForm(){
+ L.forEach(function(r){var d=isDone(r,k);h+='<label class="row"><input type="checkbox" data-done="'+r.id+'" '+(d?'checked':'')+'><span class="day" style="width:58px">'+r.t+'</span><span class="sub'+(d?' done':'')+'" style="color:inherit">'+esc(r.n)+'</span></label>'});
+ h+='</div><div class="card"><div class="big s17">الأيام السبعة القادمة</div>';
+ for(var i=0;i<7;i++){var d2=new Date(now.getFullYear(),now.getMonth(),now.getDate()+i),x=S.weeks[wt(d2)][d2.getDay()];
+  h+='<div class="row'+(i===0?' today':'')+'"><span class="dot'+(x.on?'':' o')+'"></span><span class="day">'+D[d2.getDay()]+'</span><span class="sub">'+d2.getDate()+'/'+(d2.getMonth()+1)+' · '+(x.on?'يدرس'+(x.t?' — '+esc(x.t):''):'عطلة')+'</span></div>'}
+ return h+'</div>'}
+function schView(t){
+ var h='';
+ ['A','B'].forEach(function(k){
+  h+='<div class="card"><div class="big s17">'+N[k]+(k===t?' <span class="badge">الحالي</span>':'')+'</div><div class="hint">ضع علامة على الأيام التي يدرس فيها ابنك:</div>';
+  for(var i=0;i<7;i++){var x=S.weeks[k][i];
+   h+='<div class="row"><label style="display:flex;align-items:center;gap:8px;width:118px;flex:none;font-weight:600;padding:6px 0"><input type="checkbox" data-k="'+k+'" data-i="'+i+'" '+(x.on?'checked':'')+'>'+D[i]+'</label><input type="text" placeholder="المواد / ملاحظة" data-k="'+k+'" data-i="'+i+'" value="'+esc(x.t)+'"></div>'}
+  h+='</div>'});
+ h+='<div class="card"><div class="big s17">📚 إشعار مسائي عن الغد</div><label class="row"><input type="checkbox" data-eve="on" '+(S.eve.on?'checked':'')+'><span>أخبرني كل مساء هل يدرس ابني غدًا</span></label><div class="row"><span>الوقت:</span><input type="time" data-eve="t" value="'+S.eve.t+'"></div></div>';
+ return h+'<button class="btn" data-reset="1" style="width:100%">تغيير نوع الأسبوع الحالي</button>'}
+function remView(){
  var o=F.type==='o',h='<div class="card"><div class="big s17">➕ تذكير جديد</div><div class="row"><select data-f="type"><option value="d"'+(o?'':' selected')+'>متكرر</option><option value="o"'+(o?' selected':'')+'>موعد مرة واحدة</option></select>';
  if(o)h+='<input type="date" data-f="date" value="'+F.date+'">';
  h+='<input type="time" data-f="t" value="'+F.t+'"></div><div class="row"><input type="text" data-f="n" placeholder="اسم الدواء أو المهمة" value="'+esc(F.n)+'"></div>';
  if(!o){
   h+='<div class="hint">الأيام:</div><div class="chips">';
   D.forEach(function(x,i){h+=chip('data-day="'+i+'"',x,F.days.indexOf(i)>=0)});
-  h+='</div><label class="row"><input type="checkbox" data-f="rep" '+(F.rep?'checked':'')+'><span>تكرار التنبيه كل 10 دقائق حتى يلغى</span></label>';
- }
- return h+'<button class="btn p mt" data-add="1" style="width:100%">+ إضافة</button></div>';
-}
-
+  h+='</div><label class="row"><input type="checkbox" data-f="rep" '+(F.rep?'checked':'')+'><span>كرّر التنبيه كل 10 دقائق (3 مرات) حتى أضغط «تم»</span></label>'
+ }else h+='<label class="row"><input type="checkbox" data-f="pre" '+(F.pre?'checked':'')+'><span>نبّهني قبله بيوم وقبله بساعة</span></label>';
+ h+='<button class="btn p mt" data-add="1" style="width:100%">+ إضافة</button><p class="hint" id="ns">'+esc(msg)+'</p></div>';
+ h+='<div class="card"><div class="big s17">كل التذكيرات</div>';
+ if(!S.rem.length)h+='<p class="hint">لا توجد تذكيرات.</p>';
+ sortedRem(S.rem).forEach(function(r){
+  var info=r.date?r.date+(r.pre?' · 🔔':''):(r.days&&r.days.length<7?r.days.map(function(i){return D[i].slice(0,3)}).join('،'):'يوميًا')+(r.rep?' · 🔁':'');
+  h+='<div class="row"><span class="day" style="width:58px">'+r.t+'</span><span class="sub" style="color:inherit">'+esc(r.n)+'<br><small class="offt">'+esc(info)+'</small></span><button class="btn danger" style="flex:none" data-delrem="'+r.id+'">حذف</button></div>'});
+ return h+'</div>'}
+function vitalsView(){
+ var h='<div class="card"><div class="big s17">📊 سجل القياسات الحيوية</div><div class="row"><input type="number" id="v_sys" placeholder="الضغط العالي (120)"><input type="number" id="v_dia" placeholder="الضغط المنخفض (80)"></div><div class="row"><input type="number" id="v_glu" placeholder="السكر (مغ/دسل)"><input type="number" step="0.1" id="v_temp" placeholder="الحرارة (م°)"></div><div class="row"><input type="number" step="0.1" id="v_weight" placeholder="الوزن (كغ)"></div><button class="btn p mt" data-addvital="1" style="width:100%">+ تسجيل القياس</button></div>';
+ h+='<div class="card"><div class="big s17">السجلات الأخيرة</div>';
+ if(!S.vitals.length)h+='<p class="hint">لا توجد قياسات مسجلة.</p>';
+ S.vitals.slice().reverse().forEach(function(v,idx){
+  h+='<div class="row"><span class="sub"><b>'+esc(v.date)+'</b><br>'+(v.sys?'ضغط: '+esc(v.sys)+'/'+esc(v.dia)+' | ':'')+(v.glu?'سكر: '+esc(v.glu)+' | ':'')+(v.temp?'حرارة: '+esc(v.temp)+'° | ':'')+(v.weight?'وزن: '+esc(v.weight)+'كغ':'')+'</span><button class="btn danger" style="flex:none" data-delvital="'+(S.vitals.length-1-idx)+'">حذف</button></div>'});
+ return h+'<button class="btn mt" data-expvitals="1" style="width:100%">💾 نسخ السجل كنص</button><textarea id="vx" rows="3" style="display:none" class="mt"></textarea></div>'}
+function hwView(){
+ var h='<div class="card"><div class="big s17">📚 منبه الواجبات المدرسية</div><div class="row"><input type="text" id="hw_title" placeholder="عنوان الواجب"></div><div class="row"><input type="text" id="hw_subject" placeholder="المادة الدراسية"></div><div class="row"><span>التسليم:</span><input type="date" id="hw_date"><input type="time" id="hw_time" value="18:00"></div><button class="btn p mt" data-addhw="1" style="width:100%">+ إضافة واجب وتنبيه</button></div><div class="card"><div class="big s17">قائمة الواجبات</div>';
+ if(!S.homework.length)h+='<p class="hint">لا توجد واجبات حالية.</p>';
+ S.homework.forEach(function(hw,i){h+='<div class="row"><span class="sub"><b>'+esc(hw.title)+'</b> ('+esc(hw.subject)+')<br><small class="offt">تسليم: '+esc(hw.dueDate)+' الساعة '+esc(hw.t)+'</small></span><button class="btn danger" style="flex:none" data-delhw="'+i+'">تم / حذف</button></div>'});
+ return h+'</div>'}
+function vaultView(){
+ var h='<div class="card"><div class="big s17">🔒 صندوق المعلومات المهمة</div>';
+ if(!S.vault.pin)return h+'<p class="hint">أنشئ كودًا سريًا (4 أرقام على الأقل):</p><div class="row"><input type="password" id="new_pin" placeholder="الكود السري"></div><button class="btn p mt" data-setpin="1" style="width:100%">حفظ الكود</button></div>';
+ if(!vaultUnlocked)return h+'<div class="row"><input type="password" id="enter_pin" placeholder="أدخل الكود لفتح الصندوق"></div><button class="btn p mt" data-unlock="1" style="width:100%">🔓 فتح</button></div>';
+ return h+'<textarea id="vault_info" rows="5" placeholder="أرقام التأمين، ملاحظات خاصة...">'+esc(S.vault.info)+'</textarea><div class="row"><button class="btn p" data-savevault="1">حفظ</button><button class="btn" data-lock="1">🔒 إغلاق</button></div><p class="hint">الكود يخفي المعلومات داخل التطبيق فقط، ولا يشفّرها. لا تكتب فيها أسرارًا بالغة الخطورة.</p></div>'}
+function setView(){
+ var h='<div class="card"><div class="big s17">🚨 أرقام الطوارئ</div>';
+ S.sos.forEach(function(c,i){h+='<div class="row"><span class="sub" style="color:inherit"><b>'+esc(c.name)+'</b><br>'+esc(c.phone)+'</span><button class="btn danger" style="flex:none" data-delsos="'+i+'">حذف</button></div>'});
+ h+='<div class="row"><input type="text" id="sos_name" placeholder="الاسم (الابن، الطبيب، الإسعاف...)"></div><div class="row"><input type="text" id="sos_phone" placeholder="رقم الهاتف"></div><button class="btn p mt" data-addsos="1" style="width:100%">+ إضافة رقم طوارئ</button></div>';
+ h+='<div class="card"><div class="big s17">🪪 بطاقة التعريف الطبية (ICE)</div><div class="row"><input type="text" id="ice_name" placeholder="الاسم الكامل" value="'+esc(S.ice.name)+'"></div><div class="row"><input type="text" id="ice_blood" placeholder="فصيلة الدم" value="'+esc(S.ice.blood)+'"></div><div class="row"><input type="text" id="ice_allergies" placeholder="الحساسية" value="'+esc(S.ice.allergies)+'"></div><div class="row"><textarea id="ice_notes" rows="2" placeholder="ملاحظات صحية حرجة...">'+esc(S.ice.notes)+'</textarea></div><button class="btn p mt" data-saveice="1" style="width:100%">حفظ البطاقة</button></div>';
+ h+='<div class="card"><div class="big s17">🔔 فحص الإشعارات</div><div class="row"><button class="btn" data-test="1">اختبار</button><button class="btn" data-diag="1">فحص</button><button class="btn" data-exact="1">المنبهات</button></div><p class="hint" id="ns">'+esc(msg)+'</p></div>';
+ return h+'<div class="card"><div class="big s17">💾 نسخ احتياطي</div><textarea id="bk" rows="3" placeholder="هنا تظهر بياناتك للنسخ، أو الصق نسخة سابقة للاسترجاع"></textarea><div class="row"><button class="btn" data-exp="1">إظهار البيانات</button><button class="btn" data-imp="1">استرجاع</button></div><p class="hint" id="bm"></p></div>'}
 function render(){
  var el=document.getElementById('app');
  if(S.ref===null){
-  el.innerHTML='<h1>جدول ابني</h1><div class="card"><div class="big">أي أسبوع نحن فيه الآن؟</div><div class="tabs"><button data-set="A">الأسبوع «أ»</button><button data-set="B">الأسبوع «ب»</button></div></div>';
-  return;
- }
- var now=new Date(),t=wt(now);
- var h='<h1>جدول ابني المنظومة الشاملة</h1><div class="tabs">';
- [['home','الرئيسية'],['vitals','القياسات'],['hw','الواجبات'],['vault','الصندوق'],['rem','التذكيرات'],['set','الإعدادات']].forEach(function(x){
-  h+='<button data-v="'+x[0]+'" class="'+(view===x[0]?'a':'')+'">'+x[1]+'</button>';
- });
+  el.innerHTML='<h1>جدول ابني</h1><div class="card"><div class="big">أي أسبوع نحن فيه الآن؟</div><p class="hint">اختر نوع هذا الأسبوع، وسيتناوب التطبيق تلقائيًا بعده: أ ← ب ← أ …</p><div class="tabs"><button data-set="A">الأسبوع «أ»</button><button data-set="B">الأسبوع «ب»</button></div></div>';
+  return}
+ var now=new Date(),t=wt(now),h='<h1>جدول ابني</h1><div class="tabs">';
+ [['home','الرئيسية'],['sch','الجدول'],['rem','التذكيرات'],['vitals','القياسات'],['hw','الواجبات'],['vault','الصندوق'],['set','الإعدادات']].forEach(function(x){h+='<button data-v="'+x[0]+'" class="'+(view===x[0]?'a':'')+'">'+x[1]+'</button>'});
  h+='</div>';
-
- if(view==='home') h+=homeView(now,t);
- else if(view==='vitals') h+=vitalsView();
- else if(view==='hw') h+=homeworkView();
- else if(view==='vault') h+=vaultView();
- else if(view==='rem') h+=remForm();
- else if(view==='set') h+=settingsView();
-
- el.innerHTML=h;
-}
-
-/* ---------- EVENT LISTENERS ---------- */
+ h+=view==='home'?homeView(now,t):view==='sch'?schView(t):view==='rem'?remView():view==='vitals'?vitalsView():view==='hw'?hwView():view==='vault'?vaultView():setView();
+ el.innerHTML=h}
+function val(id){var e=document.getElementById(id);return e?e.value:''}
+function delRem(id){
+ var r=findRem(id);if(r)unschedRem(r);
+ S.rem=S.rem.filter(function(x){return String(x.id)!==String(id)});
+ S.homework=S.homework.filter(function(h){return String(h.rid)!==String(id)});save()}
 document.addEventListener('click',function(ev){
  var c=ev.target,b=c.closest&&c.closest('button');
  if(b){var q=b.dataset;
-  if(q.day!==undefined){
-   var di=+q.day,p=F.days.indexOf(di);
-   if(p>=0)F.days.splice(p,1);else F.days.push(di);
-   render();return;
-  }
+  if(q.day!==undefined){var di=+q.day,p=F.days.indexOf(di);if(p>=0)F.days.splice(p,1);else F.days.push(di);render()}
   else if(q.set)setThis(q.set);
   else if(q.v){view=q.v;render()}
-  else if(q.addvital){
-   var sys=document.getElementById('v_sys').value, dia=document.getElementById('v_dia').value;
-   var glu=document.getElementById('v_glu').value, temp=document.getElementById('v_temp').value, weight=document.getElementById('v_weight').value;
-   if(!sys&&!glu&&!temp&&!weight)return;
-   S.vitals.push({date:dk(new Date())+' '+new Date().toLocaleTimeString().slice(0,5),sys:sys,dia:dia,glu:glu,temp:temp,weight:weight});
-   save();render();
-  }
-  else if(q.delvital!==undefined){S.vitals.splice(+q.delvital,1);save();render()}
-  else if(q.expvitals){
-   var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(S.vitals,null,2));
-   var dlAnchorElem = document.createElement('a');
-   dlAnchorElem.setAttribute("href",     dataStr     );
-   dlAnchorElem.setAttribute("download", "vitals_log.json");
-   dlAnchorElem.click();
-  }
-  else if(q.addhw){
-   var title=document.getElementById('hw_title').value, subject=document.getElementById('hw_subject').value;
-   var dueDate=document.getElementById('hw_date').value, time=document.getElementById('hw_time').value;
-   if(!title||!dueDate){alert('أدخل عنوان الواجب وتاريخ التسليم');return;}
-   var r={id:Date.now()%2000000000,t:time,n:'📚 واجب: '+title+' ('+subject+')',date:dueDate,pre:true};
-   S.homework.push({title:title,subject:subject,dueDate:dueDate,t:time,rid:r.id});
-   S.rem.push(r);save();schedRem(r);render();
-  }
-  else if(q.delhw!==undefined){
-   var i=+q.delhw,hw=S.homework[i];
-   if(hw&&hw.rid!==undefined){
-    for(var j=0;j<S.rem.length;j++){
-     if(String(S.rem[j].id)===String(hw.rid)){
-      var rr=S.rem.splice(j,1)[0];
-      if(rr)unschedRem(rr);
-      break;
-     }
-    }
-   }
-   S.homework.splice(i,1);save();render();
-  }
-  else if(q.setpin){
-   var pin=document.getElementById('new_pin').value;
-   if(pin.length>=4){S.vault.pin=pin;vaultUnlocked=true;save();render()}
-  }
-  else if(q.unlock){
-   var pin2=document.getElementById('enter_pin').value;
-   if(pin2===S.vault.pin){vaultUnlocked=true;render()}else alert('كود سري خاطئ!');
-  }
-  else if(q.lock){vaultUnlocked=false;render()}
-  else if(q.savevault){
-   S.vault.info=document.getElementById('vault_info').value;save();alert('تم حفظ البيانات بنجاح!');
-  }
-  else if(q.savesos){
-   S.sos.name=document.getElementById('sos_name').value;
-   S.sos.phone=document.getElementById('sos_phone').value;
-   save();render();alert('تم حفظ رقم الطوارئ!');
-  }
-  else if(q.saveice){
-   S.ice.name=document.getElementById('ice_name').value;
-   S.ice.blood=document.getElementById('ice_blood').value;
-   S.ice.allergies=document.getElementById('ice_allergies').value;
-   S.ice.notes=document.getElementById('ice_notes').value;
-   save();render();alert('تم حفظ بطاقة ICE الطبية!');
-  }
+  else if(q.reset){S.ref=null;save();render()}
   else if(q.add){
-   if(F.type==='o'&&!F.date){alert('اختر تاريخ الموعد');return;}
-   if(F.type!=='o'&&!F.days.length){alert('اختر يومًا واحدًا على الأقل');return;}
-   var r2={id:Date.now()%2000000000,t:F.t||'08:00',n:(F.n||'').trim()||'تذكير',c:dk(new Date())};
-   if(F.type==='o'){r2.date=F.date}else{r2.days=F.days.slice();r2.rep=!!F.rep}
-   S.rem.push(r2);save();schedRem(r2);render();
-  }
-  return;
+   if(F.type==='o'&&!F.date){alert('اختر تاريخ الموعد');return}
+   if(F.type!=='o'&&!F.days.length){alert('اختر يومًا واحدًا على الأقل');return}
+   var r={id:Date.now()%2000000000,t:F.t||'08:00',n:(F.n||'').trim()||'تذكير',c:dk(new Date())};
+   if(F.type==='o'){r.date=F.date;r.pre=!!F.pre}else{r.days=F.days.slice();r.rep=!!F.rep}
+   S.rem.push(r);save();F.n='';render();schedRem(r)}
+  else if(q.delrem){delRem(q.delrem);render()}
+  else if(q.addvital){
+   var sys=val('v_sys'),glu=val('v_glu'),temp=val('v_temp'),w=val('v_weight');
+   if(!sys&&!glu&&!temp&&!w)return;
+   var n=new Date();S.vitals.push({date:dk(n)+' '+pad(n.getHours())+':'+pad(n.getMinutes()),sys:sys,dia:val('v_dia'),glu:glu,temp:temp,weight:w});save();render()}
+  else if(q.delvital!==undefined){S.vitals.splice(+q.delvital,1);save();render()}
+  else if(q.expvitals){var vx=document.getElementById('vx');vx.style.display='block';vx.value=JSON.stringify(S.vitals,null,1);try{vx.select();navigator.clipboard&&navigator.clipboard.writeText(vx.value)}catch(e){}}
+  else if(q.addhw){
+   var title=val('hw_title'),dd=val('hw_date');
+   if(!title||!dd){alert('أدخل عنوان الواجب وتاريخ التسليم');return}
+   var sj=val('hw_subject'),tm=val('hw_time')||'18:00',r2={id:Date.now()%2000000000,t:tm,n:'📚 واجب: '+title+(sj?' ('+sj+')':''),date:dd,pre:true,c:dk(new Date())};
+   S.homework.push({title:title,subject:sj,dueDate:dd,t:tm,rid:r2.id});S.rem.push(r2);save();render();schedRem(r2)}
+  else if(q.delhw!==undefined){var hw=S.homework[+q.delhw];if(hw)delRem(hw.rid);else S.homework.splice(+q.delhw,1);save();render()}
+  else if(q.setpin){var pin=val('new_pin');if(pin.length>=4){S.vault.pin=pin;vaultUnlocked=true;save();render()}else alert('4 أرقام على الأقل')}
+  else if(q.unlock){if(val('enter_pin')===S.vault.pin){vaultUnlocked=true;render()}else alert('كود سري خاطئ!')}
+  else if(q.lock){vaultUnlocked=false;render()}
+  else if(q.savevault){S.vault.info=val('vault_info');save();alert('تم الحفظ')}
+  else if(q.addsos){var nm=val('sos_name').trim(),ph=val('sos_phone').trim();if(!ph){alert('أدخل رقم الهاتف');return}S.sos.push({name:nm||'طوارئ',phone:ph});save();render()}
+  else if(q.delsos!==undefined){S.sos.splice(+q.delsos,1);save();render()}
+  else if(q.saveice){S.ice={name:val('ice_name'),blood:val('ice_blood'),allergies:val('ice_allergies'),notes:val('ice_notes')};save();render();alert('تم حفظ البطاقة')}
+  else if(q.test)testNotif();
+  else if(q.diag)diag();
+  else if(q.exact)exactSettings();
+  else if(q.exp){var bk=document.getElementById('bk');bk.value=JSON.stringify(S);try{bk.select();navigator.clipboard&&navigator.clipboard.writeText(bk.value)}catch(e){}document.getElementById('bm').textContent='انسخ النص واحفظه في مكان آمن.'}
+  else if(q.imp){try{var nw=JSON.parse(val('bk'));if(!nw||typeof nw!=='object')throw 0;S=nw;fix();save();render();init()}catch(e){document.getElementById('bm').textContent='النص غير صالح.'}}
  }
 });
-
-/* تحديث حقول نموذج التذكير عند الكتابة/التغيير */
-function syncF(e){
- var el=e.target,k=el.dataset&&el.dataset.f;
- if(!k)return;
- if(k==='rep')F.rep=el.checked;else F[k]=el.value;
- if(k==='type')render();
-}
-document.addEventListener('input',syncF);
-document.addEventListener('change',syncF);
-
-/* تفعيل/إلغاء تذكير من الصفحة الرئيسية عند الضغط على المربع أو اسمه */
-document.addEventListener('change',function(e){
- var el=e.target;
- if(el&&el.type==='checkbox'&&el.dataset&&el.dataset.done!==undefined){
-  var r=findRem(el.dataset.done);
-  if(r){if(el.checked)markDone(r,dk(new Date()));else unmark(r,dk(new Date()));render()}
- }
-});
-
+function onField(ev){
+ var c=ev.target,q=c.dataset;if(!q)return;
+ if(q.f){F[q.f]=c.type==='checkbox'?c.checked:c.value;if(q.f==='type')render()}
+ else if(q.k!==undefined){if(c.type==='checkbox'){S.weeks[q.k][q.i].on=c.checked;save();schedEve()}else{S.weeks[q.k][q.i].t=c.value;save()}}
+ else if(q.eve==='on'){S.eve.on=c.checked;save();schedEve()}
+ else if(q.eve==='t'){S.eve.t=c.value||'20:00';save();schedEve()}
+ else if(q.done!==undefined&&c.type==='checkbox'){var r=findRem(q.done);if(r){if(c.checked)markDone(r,dk(new Date()));else unmark(r,dk(new Date()));render()}}}
+document.addEventListener('input',onField);document.addEventListener('change',onField);
+document.addEventListener('visibilitychange',function(){if(!document.hidden)checkExact()});
 render();init();
 </script>
 </body>
