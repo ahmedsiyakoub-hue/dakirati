@@ -64,7 +64,6 @@ function sortedRem(l){return l.slice().sort(function(a,b){return a.t<b.t?-1:a.t>
 function isDone(r,k){return !!(S.log[k]&&S.log[k][r.id])}
 function findRem(id){return S.rem.filter(function(r){return String(r.id)===String(id)})[0]}
 function rk(r){if(!r.k){S.seq=(S.seq||0)+1;r.k=S.seq;save()}return r.k}
-function nid(r){return(Number(r.id)%2000000000)||1}
 function tt(r){return r.w?'⏰ '+r.w:'⏰ تذكير دواء'}
 function stats(){
  var now=new Date(),streak=0,cnt=0,tot=0,brk=false;
@@ -90,12 +89,12 @@ function ensure(){
 function mk(r,id,at,body,day){return{id:id,title:tt(r),body:body,channelId:'meds',actionTypeId:'REM',extra:{rid:r.id,day:day},schedule:{at:at,allowWhileIdle:true}}}
 async function unschedRem(r){
  if(!LN)return;
- try{var ids=[],b=rk(r)*1000,i;for(i=0;i<500;i++)ids.push({id:b+i});await LN.cancel({notifications:ids})}catch(e){}}
+ try{var ids=[],b=rk(r)*10000,i;for(i=0;i<1000;i++)ids.push({id:b+i});await LN.cancel({notifications:ids})}catch(e){}}
 async function schedRem(r){
  if(!await ensure())return;
  try{
   await unschedRem(r);
-  var a=r.t.split(':'),h=+a[0],m=+a[1],now=new Date(),L=[],b=rk(r)*1000,d,i,j;
+  var a=r.t.split(':'),h=+a[0],m=+a[1],now=new Date(),L=[],b=rk(r)*10000,d,i,j;
   if(r.date){
    var p=r.date.split('-');d=new Date(+p[0],p[1]-1,+p[2],h,m,0);
    if(d>now)L.push(mk(r,b+800,d,r.n,r.date));
@@ -103,22 +102,35 @@ async function schedRem(r){
     if(d1>now)L.push(mk(r,b+801,d1,'غدًا: '+r.n,r.date));
     if(d2>now)L.push(mk(r,b+802,d2,'بعد ساعة: '+r.n,r.date))}
   }else{
-   var days=r.rep?10:30;
+   // فحص الأيام القادمة بدقة لضمان جدولة التذكيرات المتكررة للمستقبل
+   var days=14;
    for(i=0;i<days;i++){
     d=new Date(now.getFullYear(),now.getMonth(),now.getDate()+i,h,m,0);
-    var y=dk(d);if(d<=now||!due(r,d)||isDone(r,y))continue;
-    var baseId=b + (i * 10);
+    var y=dk(d);
+    
+    // إذا كان وقت التذكير اليوم قد مضى، نتخطى اليوم وننتظر الأيام التالية ليكون الموعد مستقبلياً صحيحاً
+    if(d <= now) continue;
+    
+    // التحقق من توافق اليوم مع أيام التذكير وجدول الأسبوع (أ أو ب) وهل تم إنجازه مسبقاً
+    if(!due(r,d) || isDone(r,y)) continue;
+    
+    var baseId=b + (i * 20);
+    // إشعار الموعد الأساسي في وقته المستقبلي
     L.push(mk(r, baseId, d, r.n, y));
+    
+    // تكرار الإشعار كل 10 دقائق (3 مرات إضافية) حتى يلغيه المريض
     if(r.rep){
      for(j=1; j<=3; j++){
       var repeatTime = new Date(d.getTime() + j * 6e5);
-      L.push(mk(r, baseId + j, repeatTime, '(تنبيه متكرر) ' + r.n, y));
+      if(repeatTime > now) {
+       L.push(mk(r, baseId + j, repeatTime, '(تنبيه متكرر) ' + r.n, y));
+      }
      }
     }
    }
   }
   if(L.length)await LN.schedule({notifications:L});
-  var pe=await LN.getPending();say('تمت جدولة التذكير بنجاح (المجدولة: '+pe.notifications.length+')')
+  var pe=await LN.getPending();say('تمت جدولة التذكيرات المتكررة بنجاح (المجدولة: '+pe.notifications.length+')')
  }catch(e){say('خطأ: '+String(e&&e.message||e))}}
 async function schedEve(){
  if(!LN||S.ref===null)return;
@@ -156,10 +168,10 @@ async function testNotif(){
   if(!await ensure())return;
   var now = Date.now();
   await LN.schedule({notifications:[
-   {id:999901,title:'⏰ اختبار 1',body:'الإشعار الأساسي وصل',channelId:'meds',schedule:{at:new Date(now+5000),allowWhileIdle:true}},
-   {id:999902,title:'⏰ اختبار 2 (بعد 10 ث)',body:'التكرار الأول يعمل',channelId:'meds',schedule:{at:new Date(now+15000),allowWhileIdle:true}}
+   {id:555501,title:'⏰ اختبار الدواء',body:'موعد الدواء الأساسي وصل',channelId:'meds',schedule:{at:new Date(now+5000),allowWhileIdle:true}},
+   {id:555502,title:'⏰ تذكير متكرر',body:'تنبيه التكرار الأول بعد 10 ثوانٍ',channelId:'meds',schedule:{at:new Date(now+15000),allowWhileIdle:true}}
   ]});
-  sy('تم جدولة اختبار التكرار. انتظر 5 ثوانٍ ثم 15 ثانية.')
+  sy('تم بدء اختبار التذكير المتكرر. انتظر 5 ثوانٍ ثم 15 ثانية.')
  }catch(e){sy('خطأ: '+String(e&&e.message||e))}}
 var exactDenied=false;
 async function checkExact(){
@@ -185,7 +197,7 @@ if(LN){try{LN.addListener('localNotificationActionPerformed',function(a){
 /* ---------- UI ---------- */
 function chip(attr,label,on){return'<button '+attr+(on?' class="a"':'')+'>'+label+'</button>'}
 function remForm(){
- var o=F.type==='o',h='<div class="card"><div class="big s17">➕ تذكير جديد (مع التكرار)</div><div class="row"><select data-f="type"><option value="d"'+(o?'':' selected')+'>متكرر</option><option value="o"'+(o?' selected':'')+'>موعد مرة واحدة</option></select>';
+ var o=F.type==='o',h='<div class="card"><div class="big s17">➕ تذكير جديد (متكرر أو موعد)</div><div class="row"><select data-f="type"><option value="d"'+(o?'':' selected')+'>متكرر</option><option value="o"'+(o?' selected':'')+'>موعد مرة واحدة</option></select>';
  if(o)h+='<input type="date" data-f="date" value="'+F.date+'">';
  h+='<input type="time" data-f="t" value="'+F.t+'"></div><div class="row"><input type="text" data-f="n" placeholder="اسم الدواء أو المهمة أو الموعد" value="'+esc(F.n)+'"></div><div class="chips">';
  ['دواء','فيتامين','ماء','موعد طبيب'].forEach(function(c){h+=chip('data-chip="'+c+'"',c)});
