@@ -44,12 +44,12 @@ input[type=checkbox]{width:22px;height:22px;accent-color:var(--ac);flex:none}
 var DD={ar:['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'],fr:['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'],en:['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']};
 var NN={ar:{A:'الأسبوع «أ»',B:'الأسبوع «ب»'},fr:{A:'Semaine « A »',B:'Semaine « B »'},en:{A:'Week “A”',B:'Week “B”'}};
 var D=DD.ar,N=NN.ar,L='ar';
-var S=null,view='home',msg='',ready=null,vaultUnlocked=false,exactDenied=false;
+var ICE_EDIT=-1,S=null,view='home',msg='',ready=null,vaultUnlocked=false,exactDenied=false;
 var F={type:'d',t:'08:00',n:'',date:'',days:[0,1,2,3,4,5,6],pre:true,rep:true};
 function blank(){var o={};for(var i=0;i<7;i++)o[i]={on:false,t:''};return o}
 function fix(){
  S.weeks=S.weeks||{A:blank(),B:blank()};S.rem=S.rem||[];S.log=S.log||{};S.vitals=S.vitals||[];S.homework=S.homework||[];
- S.vault=S.vault||{pin:'',info:''};S.ice=S.ice||{name:'',blood:'',allergies:'',notes:''};
+ S.vault=S.vault||{pin:'',info:''};S.ices=S.ices||[];if(!S.iceMig){if(S.ice&&S.ice.name)S.ices.push({id:Date.now(),name:S.ice.name,blood:S.ice.blood||'',allergies:S.ice.allergies||'',notes:S.ice.notes||''});S.iceMig=1}delete S.ice;
  S.eve=S.eve||{on:false,t:'20:00'};S.seq=S.seq||0;
  if(!Array.isArray(S.sos))S.sos=(S.sos&&S.sos.phone)?[{name:S.sos.name||'طوارئ',phone:S.sos.phone}]:[];
  if(S.ref===undefined)S.ref=null}
@@ -80,6 +80,10 @@ function tt(r){return r.w?'⏰ '+r.w:tr('⏰ تذكير')}
 
 /* ---------- i18n ---------- */
 var TR=[
+["أدخل الاسم الكامل","Saisissez le nom complet","Enter the full name"],
+["+ إضافة بطاقة","+ Ajouter une carte","+ Add card"],
+["تعديل","Modifier","Edit"],
+["إلغاء","Annuler","Cancel"],
 ["الإذن غير ممنوح. فعّل الإشعارات من إعدادات الهاتف.","Autorisation refusée. Activez les notifications dans les paramètres du téléphone.","Permission denied. Enable notifications in your phone settings."],
 ["التذكيرات والأدوية","Rappels et médicaments","Reminders & medication"],
 ["✓ تم","✓ Fait","✓ Done"],
@@ -310,11 +314,11 @@ if(LN){try{LN.addListener('localNotificationActionPerformed',function(a){
 function chip(attr,label,on){return'<button '+attr+(on?' class="a"':'')+'>'+label+'</button>'}
 function homeView(now,t){
  var e=S.weeks[t][now.getDay()],k=dk(now),h='';
- if(S.ice.name){
-  h+='<div class="ice-card"><div class="big s17" style="color:var(--danger)">🪪 بطاقة التعريف الطبية (ICE)</div><div><b>الاسم:</b> '+esc(S.ice.name)+' | <b>فصيلة الدم:</b> '+esc(S.ice.blood||'غير محدد')+'</div>';
-  if(S.ice.allergies)h+='<div><b>الحساسية:</b> '+esc(S.ice.allergies)+'</div>';
-  if(S.ice.notes)h+='<div><b>ملاحظات:</b> '+esc(S.ice.notes)+'</div>';
-  h+='</div>'}
+ S.ices.forEach(function(c){
+  h+='<div class="ice-card"><div class="big s17" style="color:var(--danger)">🪪 بطاقة التعريف الطبية (ICE)</div><div><b>الاسم:</b> '+esc(c.name)+' | <b>فصيلة الدم:</b> '+esc(c.blood||'غير محدد')+'</div>';
+  if(c.allergies)h+='<div><b>الحساسية:</b> '+esc(c.allergies)+'</div>';
+  if(c.notes)h+='<div><b>ملاحظات:</b> '+esc(c.notes)+'</div>';
+  h+='</div>'});
  S.sos.forEach(function(c){h+='<a href="tel:'+esc(c.phone)+'" style="text-decoration:none"><button class="sos-btn">🚨 اتصال: '+esc(c.name)+' ('+esc(c.phone)+')</button></a>'});
  if(exactDenied)h+='<div class="card"><div class="wr">⚠️ المنبهات الدقيقة غير مفعّلة، وقد تتأخر الإشعارات أو لا تصل.</div><button class="btn p mt" data-exact="1" style="width:100%">تفعيلها الآن</button></div>';
  h+='<div class="card"><span class="badge">'+N[t]+'</span><div class="big">'+D[now.getDay()]+' '+now.getDate()+'/'+(now.getMonth()+1)+'</div>';
@@ -375,7 +379,10 @@ function setView(){
  var h='<div class="card"><div class="big s17">🌐 Language / Langue / اللغة</div>'+langBar()+'</div><div class="card"><div class="big s17">🚨 أرقام الطوارئ</div>';
  S.sos.forEach(function(c,i){h+='<div class="row"><span class="sub" style="color:inherit"><b>'+esc(c.name)+'</b><br>'+esc(c.phone)+'</span><button class="btn danger" style="flex:none" data-delsos="'+i+'">حذف</button></div>'});
  h+='<div class="row"><input type="text" id="sos_name" placeholder="الاسم (الابن، الطبيب، الإسعاف...)"></div><div class="row"><input type="text" id="sos_phone" placeholder="رقم الهاتف"></div><button class="btn p mt" data-addsos="1" style="width:100%">+ إضافة رقم طوارئ</button></div>';
- h+='<div class="card"><div class="big s17">🪪 بطاقة التعريف الطبية (ICE)</div><div class="row"><input type="text" id="ice_name" placeholder="الاسم الكامل" value="'+esc(S.ice.name)+'"></div><div class="row"><input type="text" id="ice_blood" placeholder="فصيلة الدم" value="'+esc(S.ice.blood)+'"></div><div class="row"><input type="text" id="ice_allergies" placeholder="الحساسية" value="'+esc(S.ice.allergies)+'"></div><div class="row"><textarea id="ice_notes" rows="2" placeholder="ملاحظات صحية حرجة...">'+esc(S.ice.notes)+'</textarea></div><button class="btn p mt" data-saveice="1" style="width:100%">حفظ البطاقة</button></div>';
+ var ec=ICE_EDIT>=0&&S.ices[ICE_EDIT]?S.ices[ICE_EDIT]:{name:'',blood:'',allergies:'',notes:''},ed=ICE_EDIT>=0&&S.ices[ICE_EDIT];
+ h+='<div class="card"><div class="big s17">🪪 بطاقة التعريف الطبية (ICE)</div>';
+ S.ices.forEach(function(c,i){h+='<div class="row"><span class="sub" style="color:inherit"><b>'+esc(c.name)+'</b><br><small class="offt">'+esc(c.blood||'')+'</small></span><button class="btn" style="flex:none" data-editice="'+i+'">تعديل</button><button class="btn danger" style="flex:none" data-delice="'+i+'">حذف</button></div>'});
+ h+='<div class="row"><input type="text" id="ice_name" placeholder="الاسم الكامل" value="'+esc(ec.name)+'"></div><div class="row"><input type="text" id="ice_blood" placeholder="فصيلة الدم" value="'+esc(ec.blood)+'"></div><div class="row"><input type="text" id="ice_allergies" placeholder="الحساسية" value="'+esc(ec.allergies)+'"></div><div class="row"><textarea id="ice_notes" rows="2" placeholder="ملاحظات صحية حرجة...">'+esc(ec.notes)+'</textarea></div><button class="btn p mt" data-saveice="1" style="width:100%">'+(ed?'حفظ البطاقة':'+ إضافة بطاقة')+'</button>'+(ed?'<button class="btn mt" data-cancelice="1" style="width:100%">إلغاء</button>':'')+'</div>';
  h+='<div class="card"><div class="big s17">🔔 فحص الإشعارات</div><div class="row"><button class="btn" data-test="1">اختبار</button><button class="btn" data-diag="1">فحص</button><button class="btn" data-exact="1">المنبهات</button></div><p class="hint" id="ns">'+escp(msg)+'</p></div>';
  return h+'<div class="card"><div class="big s17">💾 نسخ احتياطي</div><textarea id="bk" rows="3" placeholder="هنا تظهر بياناتك للنسخ، أو الصق نسخة سابقة للاسترجاع"></textarea><div class="row"><button class="btn" data-exp="1">إظهار البيانات</button><button class="btn" data-imp="1">استرجاع</button></div><p class="hint" id="bm"></p></div>'}
 function render(){
@@ -426,7 +433,14 @@ document.addEventListener('click',function(ev){
   else if(q.savevault){S.vault.info=val('vault_info');save();alert('تم الحفظ')}
   else if(q.addsos){var nm=val('sos_name').trim(),ph=val('sos_phone').trim();if(!ph){alert('أدخل رقم الهاتف');return}S.sos.push({name:nm||tr('طوارئ'),phone:ph});save();render()}
   else if(q.delsos!==undefined){S.sos.splice(+q.delsos,1);save();render()}
-  else if(q.saveice){S.ice={name:val('ice_name'),blood:val('ice_blood'),allergies:val('ice_allergies'),notes:val('ice_notes')};save();render();alert('تم حفظ البطاقة')}
+  else if(q.saveice){
+   var ic={name:val('ice_name').trim(),blood:val('ice_blood'),allergies:val('ice_allergies'),notes:val('ice_notes')};
+   if(!ic.name){alert('أدخل الاسم الكامل');return}
+   if(ICE_EDIT>=0&&S.ices[ICE_EDIT]){ic.id=S.ices[ICE_EDIT].id;S.ices[ICE_EDIT]=ic}else{ic.id=Date.now();S.ices.push(ic)}
+   ICE_EDIT=-1;save();render();alert('تم حفظ البطاقة')}
+  else if(q.editice!==undefined){ICE_EDIT=+q.editice;render()}
+  else if(q.cancelice){ICE_EDIT=-1;render()}
+  else if(q.delice!==undefined){S.ices.splice(+q.delice,1);ICE_EDIT=-1;save();render()}
   else if(q.test)testNotif();
   else if(q.diag)diag();
   else if(q.exact)exactSettings();
