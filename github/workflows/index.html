@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>جدول ابني</title>
+<title>جدول ابني - المنظومة الشاملة</title>
 <style>
-:root{--bg:#f6f5f1;--card:#fff;--tx:#1f2328;--mut:#6b7280;--ac:#1d6f5f;--acs:#dff1ec;--off:#e9e7e1;--bd:#e3e1da;--wr:#b45309;
+:root{--bg:#f6f5f1;--card:#fff;--tx:#1f2328;--mut:#6b7280;--ac:#1d6f5f;--acs:#dff1ec;--off:#e9e7e1;--bd:#e3e1da;--wr:#b45309;--danger:#dc2626;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15181a;--card:#1f2326;--tx:#ececec;--mut:#9aa3ab;--ac:#4fc3a8;--acs:#1e3a34;--off:#2a2f33;--bd:#2f353a;--wr:#fbbf24;color-scheme:dark}}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15181a;--card:#1f2326;--tx:#ececec;--mut:#9aa3ab;--ac:#4fc3a8;--acs:#1e3a34;--off:#2a2f33;--bd:#2f353a;--wr:#fbbf24;--danger:#ef4444;color-scheme:dark}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;line-height:1.5}
 .w{max-width:520px;margin:0 auto;padding:16px}
@@ -16,33 +16,47 @@ h1{font-size:20px;margin:4px 0 12px}
 .big{font-size:22px;font-weight:700;margin:4px 0}.s17{font-size:17px}
 .badge{display:inline-block;background:var(--acs);color:var(--ac);border-radius:999px;padding:2px 12px;font-size:14px;font-weight:600}
 .on{color:var(--ac)}.offt{color:var(--mut)}.wr{color:var(--wr);font-weight:600}
-.tabs{display:flex;gap:6px;margin-bottom:12px}
-.tabs button,.btn{flex:1;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:12px;padding:10px 4px;font:inherit;font-weight:600;font-size:14px}
+.tabs{display:flex;gap:4px;margin-bottom:12px;overflow-x:auto;padding-bottom:4px}
+.tabs button,.btn{flex:1;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:12px;padding:8px 6px;font:inherit;font-weight:600;font-size:13px;white-space:nowrap}
 .tabs button.a,.btn.p,.chips button.a{background:var(--ac);color:#fff;border-color:var(--ac)}
+.btn.danger{background:var(--danger);color:#fff;border-color:var(--danger)}
 .row{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--bd)}
 .row:first-of-type{border-top:0}
 .dot{width:10px;height:10px;border-radius:50%;background:var(--ac);flex:none}.dot.o{background:var(--off)}
 .day{width:70px;flex:none;font-weight:600}
 .sub{color:var(--mut);font-size:14px;flex:1}
 .today{background:var(--acs);border-radius:10px;padding-inline:8px;margin-inline:-8px}
-input[type=text],input[type=time],input[type=date],input[type=number],select,textarea{border:1px solid var(--bd);background:var(--bg);color:var(--tx);border-radius:10px;padding:8px;font:inherit;min-width:0}
+input[type=text],input[type=time],input[type=date],input[type=number],input[type=password],select,textarea{border:1px solid var(--bd);background:var(--bg);color:var(--tx);border-radius:10px;padding:8px;font:inherit;min-width:0}
 input[type=text],textarea{flex:1;width:100%}
 input[type=checkbox]{width:22px;height:22px;accent-color:var(--ac);flex:none}
 .hint{color:var(--mut);font-size:13px;margin:8px 0}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
-.chips button{border:1px solid var(--bd);background:var(--bg);color:var(--tx);border-radius:999px;padding:4px 12px;font:inherit;font-size:14px}
+.chips button{border:1px solid var(--bd);background:var(--bg);color:var(--tx);border-radius:999px;padding:4px 12px;font:inherit;font-size:13px}
 .done{text-decoration:line-through;color:var(--mut)}
 .mt{margin-top:8px}
+.sos-btn{background:var(--danger);color:#fff;font-size:17px;font-weight:bold;padding:12px;border-radius:14px;width:100%;border:none;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;margin-bottom:10px}
+.ice-card{border:2px solid var(--danger);background:var(--card);border-radius:14px;padding:12px;margin-bottom:12px}
 </style>
 </head>
 <body>
 <div class="w" id="app"></div>
 <script>
 var D=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'],N={A:'الأسبوع «أ»',B:'الأسبوع «ب»'};
-var S=null,view='home',msg='',ready=null;
+var S=null,view='home',msg='',ready=null,vaultUnlocked=false;
 var F={type:'d',t:'08:00',n:'',w:'',date:'',days:[0,1,2,3,4,5,6],wk:'',pre:true,rep:true,st:'',ln:'',li:''};
+
 function blank(){var o={};for(var i=0;i<7;i++)o[i]={on:false,t:''};return o}
-function fix(){S.weeks=S.weeks||{A:blank(),B:blank()};S.rem=S.rem||[];S.log=S.log||S.done||{};S.lists=S.lists||[];S.eve=S.eve||{on:true,t:'20:00'};if(S.ref===undefined)S.ref=null}
+function fix(){
+ S.weeks=S.weeks||{A:blank(),B:blank()};
+ S.rem=S.rem||[];
+ S.log=S.log||{};
+ S.vitals=S.vitals||[];
+ S.homework=S.homework||[];
+ S.vault=S.vault||{pin:'',info:''};
+ S.sos=S.sos||{name:'الطوارئ',phone:''};
+ S.ice=S.ice||{name:'',blood:'',allergies:'',notes:''};
+ if(S.ref===undefined)S.ref=null
+}
 try{S=JSON.parse(localStorage.getItem('edt'))}catch(e){}
 if(!S||typeof S!=='object')S={};fix();
 function save(){try{localStorage.setItem('edt',JSON.stringify(S))}catch(e){}}
@@ -59,21 +73,14 @@ function due(r,d){
  if(r.c&&dk(d)<r.c)return false;
  if(r.days&&r.days.indexOf(d.getDay())<0)return false;
  if(r.wk&&S.ref!==null&&wt(d)!==r.wk)return false;
- return true}
+ return true
+}
 function sortedRem(l){return l.slice().sort(function(a,b){return a.t<b.t?-1:a.t>b.t?1:0})}
 function isDone(r,k){return !!(S.log[k]&&S.log[k][r.id])}
 function findRem(id){return S.rem.filter(function(r){return String(r.id)===String(id)})[0]}
 function rk(r){if(!r.k){S.seq=(S.seq||0)+1;r.k=S.seq;save()}return r.k}
 function tt(r){return r.w?'⏰ '+r.w:'⏰ تذكير دواء'}
-function stats(){
- var now=new Date(),streak=0,cnt=0,tot=0,brk=false;
- for(var i=0;i<60;i++){
-  var d=new Date(now.getFullYear(),now.getMonth(),now.getDate()-i),k=dk(d),L=S.rem.filter(function(r){return !r.date&&due(r,d)});
-  if(!L.length)continue;
-  var ok=L.every(function(r){return isDone(r,k)});
-  if(i<7){tot+=L.length;L.forEach(function(r){if(isDone(r,k))cnt++})}
-  if(ok){if(!brk)streak++}else if(i>0)brk=true}
- return{streak:streak,cnt:cnt,tot:tot}}
+
 /* ---------- notifications ---------- */
 var CAP=window.Capacitor,NATIVE=!!(CAP&&CAP.isNativePlatform&&CAP.isNativePlatform()),LN=null;
 if(NATIVE){try{LN=(CAP.Plugins&&CAP.Plugins.LocalNotifications)||(CAP.registerPlugin?CAP.registerPlugin('LocalNotifications'):null)}catch(e){}}
@@ -81,11 +88,12 @@ function say(m){msg=m;var el=document.getElementById('ns');if(el)el.textContent=
 function ensure(){
  if(!LN)return Promise.resolve(false);
  if(!ready)ready=(async function(){
-  var p=await LN.requestPermissions();if(p.display!=='granted'){say('الإذن غير ممنوح ('+p.display+'). فعّل الإشعارات من إعدادات الهاتف.');return false}
+  var p=await LN.requestPermissions();if(p.display!=='granted')return false;
   try{await LN.createChannel({id:'meds',name:'التذكيرات والأدوية',importance:5,vibration:true,visibility:1})}catch(e){}
   try{await LN.registerActionTypes({types:[{id:'REM',actions:[{id:'done',title:'✓ تم'},{id:'snooze',title:'⏰ بعد 10 دقائق'}]}]})}catch(e){}
   return true})();
- return ready}
+ return ready
+}
 function mk(r,id,at,body,day){return{id:id,title:tt(r),body:body,channelId:'meds',actionTypeId:'REM',extra:{rid:r.id,day:day},schedule:{at:at,allowWhileIdle:true}}}
 async function unschedRem(r){
  if(!LN)return;
@@ -98,40 +106,26 @@ async function schedRem(r){
   if(r.date){
    var p=r.date.split('-');d=new Date(+p[0],p[1]-1,+p[2],h,m,0);
    if(d>now)L.push(mk(r,b+800,d,r.n,r.date));
-   if(r.pre){var d1=new Date(d.getTime()-864e5),d2=new Date(d.getTime()-36e5);
-    if(d1>now)L.push(mk(r,b+801,d1,'غدًا: '+r.n,r.date));
-    if(d2>now)L.push(mk(r,b+802,d2,'بعد ساعة: '+r.n,r.date))}
   }else{
-   // فحص الأيام القادمة بدقة لضمان جدولة التذكيرات المتكررة للمستقبل
    var days=14;
    for(i=0;i<days;i++){
     d=new Date(now.getFullYear(),now.getMonth(),now.getDate()+i,h,m,0);
     var y=dk(d);
-    
-    // إذا كان وقت التذكير اليوم قد مضى، نتخطى اليوم وننتظر الأيام التالية ليكون الموعد مستقبلياً صحيحاً
     if(d <= now) continue;
-    
-    // التحقق من توافق اليوم مع أيام التذكير وجدول الأسبوع (أ أو ب) وهل تم إنجازه مسبقاً
     if(!due(r,d) || isDone(r,y)) continue;
-    
     var baseId=b + (i * 20);
-    // إشعار الموعد الأساسي في وقته المستقبلي
     L.push(mk(r, baseId, d, r.n, y));
-    
-    // تكرار الإشعار كل 10 دقائق (3 مرات إضافية) حتى يلغيه المريض
     if(r.rep){
      for(j=1; j<=3; j++){
       var repeatTime = new Date(d.getTime() + j * 6e5);
-      if(repeatTime > now) {
-       L.push(mk(r, baseId + j, repeatTime, '(تنبيه متكرر) ' + r.n, y));
-      }
+      if(repeatTime > now) L.push(mk(r, baseId + j, repeatTime, '(تنبيه متكرر) ' + r.n, y));
      }
     }
    }
   }
   if(L.length)await LN.schedule({notifications:L});
-  var pe=await LN.getPending();say('تمت جدولة التذكيرات المتكررة بنجاح (المجدولة: '+pe.notifications.length+')')
- }catch(e){say('خطأ: '+String(e&&e.message||e))}}
+ }catch(e){}}
+
 async function schedEve(){
  if(!LN||S.ref===null)return;
  if(!await ensure())return;
@@ -144,169 +138,226 @@ async function schedEve(){
    var g=new Date(d.getFullYear(),d.getMonth(),d.getDate()+1),x=S.weeks[wt(g)][g.getDay()];
    L.push({id:1900000000+dn(d)%14,title:'📚 المدرسة',body:'غدًا ('+D[g.getDay()]+') '+(x.on?'يدرس'+(x.t?' — '+x.t:''):'عطلة'),channelId:'meds',schedule:{at:d,allowWhileIdle:true}})}
   if(L.length)await LN.schedule({notifications:L})
- }catch(e){say('خطأ: '+String(e&&e.message||e))}}
-async function cancelFollow(r,day){
- if(!LN)return;
- try{await unschedRem(r); await schedRem(r);}catch(e){}}
-async function lowStock(r){
- if(!await ensure())return;
- try{await LN.schedule({notifications:[{id:1700000000+rk(r),title:'⚠️ ينقص الدواء',body:r.n+': بقي '+r.st,channelId:'meds',schedule:{at:new Date(Date.now()+2000),allowWhileIdle:true}}]})}catch(e){}}
-async function snooze(r,day){
- if(!await ensure())return;
- try{await LN.schedule({notifications:[mk(r,1800000000+Math.floor(Math.random()*1e6),new Date(Date.now()+6e5),r.n,day)]})}catch(e){}}
-function markDone(r,day){
- S.log[day]=S.log[day]||{};if(S.log[day][r.id])return;
- S.log[day][r.id]=true;
- if(r.st!=null){r.st=Math.max(0,r.st-1);if(r.st<=5)lowStock(r)}
- save();cancelFollow(r,day)}
-function unmark(r,day){if(S.log[day]&&S.log[day][r.id]){S.log[day][r.id]=false;if(r.st!=null)r.st++;save()}}
-async function testNotif(){
- var el=document.getElementById('ns');function sy(m){if(el)el.textContent=m}
- if(!NATIVE){sy('أنت لا تستعمل تطبيق أندرويد.');return}
- if(!LN){sy('خاصية الإشعارات غير متوفرة.');return}
- try{
-  if(!await ensure())return;
-  var now = Date.now();
-  await LN.schedule({notifications:[
-   {id:555501,title:'⏰ اختبار الدواء',body:'موعد الدواء الأساسي وصل',channelId:'meds',schedule:{at:new Date(now+5000),allowWhileIdle:true}},
-   {id:555502,title:'⏰ تذكير متكرر',body:'تنبيه التكرار الأول بعد 10 ثوانٍ',channelId:'meds',schedule:{at:new Date(now+15000),allowWhileIdle:true}}
-  ]});
-  sy('تم بدء اختبار التذكير المتكرر. انتظر 5 ثوانٍ ثم 15 ثانية.')
- }catch(e){sy('خطأ: '+String(e&&e.message||e))}}
-var exactDenied=false;
-async function checkExact(){
- if(!LN)return;
- try{var x=await LN.checkExactNotificationSetting(),was=exactDenied;exactDenied=(x.exact_alarm==='denied');
-  if(was&&!exactDenied)init();
-  if(was!==exactDenied)render()}catch(e){}}
-async function exactSettings(){try{await LN.changeExactNotificationSetting()}catch(e){}}
-async function diag(){
- var t=[];
- try{var p=await LN.checkPermissions();t.push('الإشعارات: '+p.display)}catch(e){t.push('الإشعارات: ؟')}
- try{var x=await LN.checkExactNotificationSetting();t.push('المنبهات الدقيقة: '+x.exact_alarm)}catch(e){}
- try{var pe=await LN.getPending();t.push('المجدولة: '+pe.notifications.length)}catch(e){}
- say(t.join(' | '))}
+ }catch(e){}}
+
+async function cancelFollow(r,day){if(!LN)return;try{await unschedRem(r);await schedRem(r);}catch(e){}}
+function markDone(r,day){S.log[day]=S.log[day]||{};if(S.log[day][r.id])return;S.log[day][r.id]=true;save();cancelFollow(r,day)}
+function unmark(r,day){if(S.log[day]&&S.log[day][r.id]){S.log[day][r.id]=false;save()}}
+
 async function init(){
  if(!LN)return;
- await checkExact();
  for(var i=0;i<S.rem.length;i++)await schedRem(S.rem[i]);
- await schedEve()}
-if(LN){try{LN.addListener('localNotificationActionPerformed',function(a){
- var x=(a.notification&&a.notification.extra)||{},r=findRem(x.rid);if(!r)return;
- if(a.actionId==='done'){markDone(r,x.day);render()}else if(a.actionId==='snooze'){snooze(r,x.day)}})}catch(e){}}
-/* ---------- UI ---------- */
+ await schedEve()
+}
+
+/* ---------- UI VIEWS ---------- */
 function chip(attr,label,on){return'<button '+attr+(on?' class="a"':'')+'>'+label+'</button>'}
-function remForm(){
- var o=F.type==='o',h='<div class="card"><div class="big s17">➕ تذكير جديد (متكرر أو موعد)</div><div class="row"><select data-f="type"><option value="d"'+(o?'':' selected')+'>متكرر</option><option value="o"'+(o?' selected':'')+'>موعد مرة واحدة</option></select>';
- if(o)h+='<input type="date" data-f="date" value="'+F.date+'">';
- h+='<input type="time" data-f="t" value="'+F.t+'"></div><div class="row"><input type="text" data-f="n" placeholder="اسم الدواء أو المهمة أو الموعد" value="'+esc(F.n)+'"></div><div class="chips">';
- ['دواء','فيتامين','ماء','موعد طبيب'].forEach(function(c){h+=chip('data-chip="'+c+'"',c)});
- h+='</div><div class="row"><input type="text" data-f="w" placeholder="لمن؟ (اختياري)" value="'+esc(F.w)+'"></div><div class="chips">';
- ['أنا','ابني'].forEach(function(c){h+=chip('data-who="'+c+'"',c,F.w===c)});
- h+='</div>';
- if(!o){
-  h+='<div class="hint">الأيام:</div><div class="chips">';
-  D.forEach(function(x,i){h+=chip('data-day="'+i+'"',x,F.days.indexOf(i)>=0)});
-  h+='</div><div class="row"><select data-f="wk"><option value="">كل الأسابيع</option><option value="A"'+(F.wk==='A'?' selected':'')+'>الأسبوع «أ» فقط</option><option value="B"'+(F.wk==='B'?' selected':'')+'>الأسبوع «ب» فقط</option></select><input type="number" data-f="st" placeholder="عدد الحبات (اختياري)" value="'+F.st+'" style="width:100%"></div>';
-  h+='<label class="row"><input type="checkbox" data-f="rep" '+(F.rep?'checked':'')+'><span>تكرار التنبيه كل 10 دقائق (3 مرات) حتى يضغط المريض «تم»</span></label>'
- }else h+='<label class="row"><input type="checkbox" data-f="pre" '+(F.pre?'checked':'')+'><span>نبّهني قبله بيوم وقبله بساعة</span></label>';
- return h+'<button class="btn p mt" data-add="1" style="width:100%">+ إضافة</button><p class="hint" id="ns">'+esc(msg)+'</p><div class="row"><button class="btn" data-test="1">🔔 اختبار</button><button class="btn" data-diag="1">🩺 فحص</button><button class="btn" data-exact="1">⚙️ المنبهات</button></div></div>'}
-function remList(){
- var h='<div class="card"><div class="big s17">كل التذكيرات</div>';
- if(!S.rem.length)return h+'<p class="hint">لا توجد تذكيرات.</p></div>';
- sortedRem(S.rem).forEach(function(r){
-  var info=r.date?r.date+(r.pre?' · 🔔':''):(r.days&&r.days.length<7?r.days.map(function(i){return D[i].slice(0,3)}).join('،'):'يوميًا')+(r.wk?' · «'+(r.wk==='A'?'أ':'ب')+'»':'')+(r.rep?' · 🔁 تكرار مفعل':'')+(r.st!=null?' · بقي '+r.st:'');
-  h+='<div class="row"><span class="day" style="width:58px">'+r.t+'</span><span class="sub" style="color:inherit">'+esc(r.n)+(r.w?' ('+esc(r.w)+')':'')+'<br><small class="offt">'+esc(info)+'</small></span><button class="btn" style="flex:none;padding:6px 12px" data-del="'+r.id+'">حذف</button></div>'});
- return h+'</div>'}
+
 function homeView(now,t){
- var e=S.weeks[t][now.getDay()],k=dk(now),h='<div class="card"><span class="badge">'+N[t]+'</span><div class="big">'+D[now.getDay()]+' '+now.getDate()+'/'+(now.getMonth()+1)+'</div>';
+ var e=S.weeks[t][now.getDay()],k=dk(now);
+ var h='';
+
+ // 1. عرض بطاقة الطوارئ الطبية بارزة في الأعلى إذا تم ملؤها
+ if(S.ice.name){
+  h+='<div class="ice-card"><div class="big s17" style="color:var(--danger)">🪪 بطاقة التعريف الطبية (ICE)</div>';
+  h+='<div><b>الاسم:</b> '+esc(S.ice.name)+' | <b>فصيلة الدم:</b> '+esc(S.ice.blood||'غير محدد')+'</div>';
+  if(S.ice.allergies)h+='<div><b>الحساسية:</b> '+esc(S.ice.allergies)+'</div>';
+  if(S.ice.notes)h+='<div><b>ملاحظات:</b> '+esc(S.ice.notes)+'</div>';
+  h+='</div>';
+ }
+
+ // 2. زر الطوارئ السريع بارز
+ if(S.sos.phone){
+  h+='<a href="tel:'+esc(S.sos.phone)+'" style="text-decoration:none"><button class="sos-btn">🚨 اتصال طوارئ سريع بـ ('+esc(S.sos.name')+')</button></a>';
+ }
+
+ h+='<div class="card"><span class="badge">'+N[t]+'</span><div class="big">'+D[now.getDay()]+' '+now.getDate()+'/'+(now.getMonth()+1)+'</div>';
  h+=e.on?'<div class="big on">✓ يدرس اليوم</div>':'<div class="big offt">لا يدرس اليوم</div>';
  if(e.on&&e.t)h+='<div>'+esc(e.t)+'</div>';
  h+='</div>';
- if(exactDenied)h+='<div class="card"><div class="wr">⚠️ المنبهات الدقيقة غير مفعّلة، وقد تتأخر الإشعارات أو لا تصل.</div><button class="btn p mt" data-exact="1" style="width:100%">تفعيلها الآن</button><p class="hint">فعّل «المنبهات والتذكيرات» لهذا التطبيق ثم ارجع إليه.</p></div>';
- var low=S.rem.filter(function(r){return r.st!=null&&r.st<=5});
- if(low.length){h+='<div class="card">';low.forEach(function(r){h+='<div class="wr">⚠️ ينقص: '+esc(r.n)+' (بقي '+r.st+')</div>'});h+='</div>'}
- var L=sortedRem(S.rem.filter(function(r){return due(r,now)})),st=stats();
+
+ var L=sortedRem(S.rem.filter(function(r){return due(r,now)}));
  h+='<div class="card"><div class="big s17">⏰ تذكيراتي اليوم</div>';
- if(st.tot||st.streak)h+='<div class="hint">🔥 '+st.streak+' أيام متتالية · هذا الأسبوع: '+st.cnt+'/'+st.tot+'</div>';
  if(!L.length)h+='<p class="hint">لا تذكيرات اليوم.</p>';
- L.forEach(function(r){var d=isDone(r,k);h+='<label class="row"><input type="checkbox" data-done="'+r.id+'" '+(d?'checked':'')+'><span class="day" style="width:58px">'+r.t+'</span><span class="sub'+(d?' done':'')+'" style="color:inherit">'+esc(r.n)+(r.w?' ('+esc(r.w)+')':'')+(r.st!=null?' · بقي '+r.st:'')+'</span></label>'});
+ L.forEach(function(r){var d=isDone(r,k);h+='<label class="row"><input type="checkbox" data-done="'+r.id+'" '+(d?'checked':'')+'><span class="day" style="width:58px">'+r.t+'</span><span class="sub'+(d?' done':'')+'">'+esc(r.n)+(r.w?' ('+esc(r.w)+')':'')+'</span></label>'});
  h+='</div>';
- var up=sortedRem(S.rem.filter(function(r){return r.date&&r.date>k})).sort(function(a,b){return a.date<b.date?-1:1}).slice(0,5);
- if(up.length){h+='<div class="card"><div class="big s17">📅 مواعيد قادمة</div>';up.forEach(function(r){h+='<div class="row"><span class="day" style="width:96px">'+r.date.slice(5)+' '+r.t+'</span><span class="sub" style="color:inherit">'+esc(r.n)+'</span></div>'});h+='</div>'}
- h+='<div class="card"><div class="big s17">الأيام السبعة القادمة</div>';
- for(var i=0;i<7;i++){var d=new Date(now.getFullYear(),now.getMonth(),now.getDate()+i),x=S.weeks[wt(d)][d.getDay()];
-  h+='<div class="row'+(i===0?' today':'')+'"><span class="dot'+(x.on?'':' o')+'"></span><span class="day">'+D[d.getDay()]+'</span><span class="sub">'+d.getDate()+'/'+(d.getMonth()+1)+' · '+(x.on?'يدرس'+(x.t?' — '+esc(x.t):''):'عطلة')+'</span></div>'}
- return h+'</div>'}
-function listsView(){
- var h='<div class="card"><div class="big s17">➕ قائمة جديدة</div><div class="row"><input type="text" data-f="ln" placeholder="اسم القائمة (مثل: حقيبة المدرسة)" value="'+esc(F.ln)+'"></div><textarea data-f="li" rows="4" placeholder="عنصر في كل سطر">'+esc(F.li)+'</textarea><button class="btn p mt" data-addlist="1" style="width:100%">إضافة القائمة</button></div>';
- S.lists.forEach(function(l,i){
-  h+='<div class="card"><div class="big s17">'+esc(l.n)+'</div>';
-  l.items.forEach(function(x,j){h+='<label class="row"><input type="checkbox" data-li="'+i+'" data-ii="'+j+'" '+(x.ok?'checked':'')+'><span class="'+(x.ok?'done':'')+'">'+esc(x.t)+'</span></label>'});
-  h+='<div class="row"><button class="btn" data-lrs="'+i+'">إعادة تعيين</button><button class="btn" data-ldel="'+i+'">حذف</button></div></div>'});
- return h}
-function schView(t){
- var h='';
- ['A','B'].forEach(function(k){
-  h+='<div class="card"><div class="big s17">'+N[k]+(k===t?' <span class="badge">الحالي</span>':'')+'</div>';
-  for(var i=0;i<7;i++){var x=S.weeks[k][i];
-   h+='<div class="row"><label style="display:flex;align-items:center;gap:8px;width:118px;flex:none;font-weight:600;padding:6px 0"><input type="checkbox" data-k="'+k+'" data-i="'+i+'" '+(x.on?'checked':'')+'>'+D[i]+'</label><input type="text" placeholder="المواد / ملاحظة" data-k="'+k+'" data-i="'+i+'" value="'+esc(x.t)+'"></div>'}
-  h+='</div>'});
- h+='<div class="card"><div class="big s17">📚 إشعار مسائي عن الغد</div><label class="row"><input type="checkbox" data-eve="on" '+(S.eve.on?'checked':'')+'><span>أخبرني كل مساء هل يدرس ابني غدًا</span></label><div class="row"><span>الوقت:</span><input type="time" data-eve="t" value="'+S.eve.t+'"></div></div>';
- h+='<div class="card"><div class="big s17">💾 نسخ احتياطي</div><textarea id="bk" rows="3" placeholder="هنا تظهر بياناتك للنسخ، أو الصق نسخة سابقة للاسترجاع"></textarea><div class="row"><button class="btn" data-exp="1">إظهار البيانات</button><button class="btn" data-imp="1">استرجاع</button></div><p class="hint" id="bm"></p></div>';
- return h+'<button class="btn" data-reset="1" style="width:100%">تغيير نوع الأسبوع الحالي</button>'}
+ return h;
+}
+
+function vitalsView(){
+ var h='<div class="card"><div class="big s17">📊 سجل القياسات الحيوية</div>';
+ h+='<div class="row"><input type="number" id="v_sys" placeholder="الضغط العالي (مثلاً 120)"><input type="number" id="v_dia" placeholder="الضغط المنخفض (80)"></div>';
+ h+='<div class="row"><input type="number" id="v_glu" placeholder="السكر (مغ/دسل)"><input type="number" step="0.1" id="v_temp" placeholder="الحرارة (م°)"></div>';
+ h+='<div class="row"><input type="number" step="0.1" id="v_weight" placeholder="الوزن (كغ)"></div>';
+ h+='<button class="btn p mt" data-addvital="1" style="width:100%">+ تسجيل القياس</button></div>';
+
+ h+='<div class="card"><div class="big s17">السجلات الأخيرة</div>';
+ if(!S.vitals.length)h+='<p class="hint">لا توجد قياسات مسجلة.</p>';
+ S.vitals.slice().reverse().forEach(function(v,idx){
+  h+='<div class="row"><span class="sub"><b>'+v.date+'</b><br>';
+  if(v.sys)h+='ضغط: '+v.sys+'/'+v.dia+' | ';
+  if(v.glu)h+='سكر: '+v.glu+' | ';
+  if(v.temp)h+='حرارة: '+v.temp+'° | ';
+  if(v.weight)h+='وزن: '+v.weight+'كغ';
+  h+='</span><button class="btn danger" style="flex:none" data-delvital="'+(S.vitals.length-1-idx)+'">حذف</button></div>';
+ });
+ h+='<button class="btn mt" data-expvitals="1" style="width:100%">💾 تصدير سجل القياسات كملف</button>';
+ h+='</div>';
+ return h;
+}
+
+function homeworkView(){
+ var h='<div class="card"><div class="big s17">📚 منبه الواجبات المدرسية</div>';
+ h+='<div class="row"><input type="text" id="hw_title" placeholder="عنوان الواجب (مثلاً: تمارين الرياضيات)"></div>';
+ h+='<div class="row"><input type="text" id="hw_subject" placeholder="المادة الدراسية"></div>';
+ h+='<div class="row"><span>تاريخ التسليم:</span><input type="date" id="hw_date"><input type="time" id="hw_time" value="18:00"></div>';
+ h+='<button class="btn p mt" data-addhw="1" style="width:100%">+ إضافة واجب وتنبيه</button></div>';
+
+ h+='<div class="card"><div class="big s17">قائمة الواجبات</div>';
+ if(!S.homework.length)h+='<p class="hint">لا توجد واجبات حالية.</p>';
+ S.homework.forEach(function(hw,i){
+  h+='<div class="row"><span class="sub"><b>'+esc(hw.title)+'</b> ('+esc(hw.subject)+')<br><small class="offt">تسليم: '+hw.dueDate+' الساعة '+hw.t+'</small></span>';
+  h+='<button class="btn danger" style="flex:none" data-delhw="'+i+'">تم / حذف</button></div>';
+ });
+ h+='</div>';
+ return h;
+}
+
+function vaultView(){
+ var h='<div class="card"><div class="big s17">🔒 صندوق المعلومات المهمة</div>';
+ if(!S.vault.pin){
+  h+='<p class="hint">أنشئ كوداً سرياً لحماية معلوماتك الحساسة:</p>';
+  h+='<div class="row"><input type="password" id="new_pin" placeholder="أدخل كود سري من 4 أرقام"></div>';
+  h+='<button class="btn p mt" data-setpin="1" style="width:100%">حفظ الكود السري</button></div>';
+  return h;
+ }
+ if(!vaultUnlocked){
+  h+='<div class="row"><input type="password" id="enter_pin" placeholder="أدخل الكود السري لفتح الصندوق"></div>';
+  h+='<button class="btn p mt" data-unlock="1" style="width:100%">🔓 فتح الصندوق</button></div>';
+  return h;
+ }
+ h+='<p class="hint">الصندوق مفتوح:</p>';
+ h+='<textarea id="vault_info" rows="5" placeholder="أرقام التأمين، فصائل الدم، ملاحظات خاصة...">'+esc(S.vault.info)+'</textarea>';
+ h+='<div class="row"><button class="btn p" data-savevault="1">حفظ المعلومات</button><button class="btn" data-lock="1">🔒 إغلاق الصندوق</button></div></div>';
+ return h;
+}
+
+function settingsView(){
+ var h='<div class="card"><div class="big s17">🚨 إعدادات زر الطوارئ السريع</div>';
+ h+='<div class="row"><input type="text" id="sos_name" placeholder="اسم جهة الاتصال (مثلاً الابن / الطبيب)" value="'+esc(S.sos.name)+'"></div>';
+ h+='<div class="row"><input type="text" id="sos_phone" placeholder="رقم الهاتف (مثلاً 0661000000)" value="'+esc(S.sos.phone)+'"></div>';
+ h+='<button class="btn p mt" data-savesos="1" style="width:100%">حفظ إعدادات الطوارئ</button></div>';
+
+ h+='<div class="card"><div class="big s17">🪪 بطاقة التعريف الطبية (ICE)</div>';
+ h+='<div class="row"><input type="text" id="ice_name" placeholder="الاسم الكامل" value="'+esc(S.ice.name)+'"></div>';
+ h+='<div class="row"><input type="text" id="ice_blood" placeholder="فصيلة الدم (مثلاً O+)" value="'+esc(S.ice.blood)+'"></div>';
+ h+='<div class="row"><input type="text" id="ice_allergies" placeholder="الحساسية (أدوية، أطعمة)" value="'+esc(S.ice.allergies)+'"></div>';
+ h+='<div class="row"><textarea id="ice_notes" rows="2" placeholder="ملاحظات صحية حرجة...">'+esc(S.ice.notes)+'</textarea></div>';
+ h+='<button class="btn p mt" data-saveice="1" style="width:100%">حفظ بطاقة ICE</button></div>';
+ return h;
+}
+
+function remForm(){
+ var o=F.type==='o',h='<div class="card"><div class="big s17">➕ تذكير جديد</div><div class="row"><select data-f="type"><option value="d"'+(o?'':' selected')+'>متكرر</option><option value="o"'+(o?' selected':'')+'>موعد مرة واحدة</option></select>';
+ if(o)h+='<input type="date" data-f="date" value="'+F.date+'">';
+ h+='<input type="time" data-f="t" value="'+F.t+'"></div><div class="row"><input type="text" data-f="n" placeholder="اسم الدواء أو المهمة" value="'+esc(F.n)+'"></div>';
+ if(!o){
+  h+='<div class="hint">الأيام:</div><div class="chips">';
+  D.forEach(function(x,i){h+=chip('data-day="'+i+'"',x,F.days.indexOf(i)>=0)});
+  h+='</div><label class="row"><input type="checkbox" data-f="rep" '+(F.rep?'checked':'')+'><span>تكرار التنبيه كل 10 دقائق حتى يلغى</span></label>';
+ }
+ return h+'<button class="btn p mt" data-add="1" style="width:100%">+ إضافة</button></div>';
+}
+
 function render(){
  var el=document.getElementById('app');
  if(S.ref===null){
-  el.innerHTML='<h1>جدول ابني</h1><div class="card"><div class="big">أي أسبوع نحن فيه الآن؟</div><p class="hint">اختر نوع هذا الأسبوع، وسيتناوب التطبيق تلقائيًا بعده: أ ← ب ← أ …</p><div class="tabs"><button data-set="A">الأسبوع «أ»</button><button data-set="B">الأسبوع «ب»</button></div></div>';
-  return}
- var now=new Date(),t=wt(now),h='<h1>جدول ابني</h1><div class="tabs">';
- [['home','اليوم'],['rem','التذكيرات'],['lst','القوائم'],['sch','الجدول']].forEach(function(x){h+='<button data-v="'+x[0]+'" class="'+(view===x[0]?'a':'')+'">'+x[1]+'</button>'});
+  el.innerHTML='<h1>جدول ابني</h1><div class="card"><div class="big">أي أسبوع نحن فيه الآن؟</div><div class="tabs"><button data-set="A">الأسبوع «أ»</button><button data-set="B">الأسبوع «ب»</button></div></div>';
+  return;
+ }
+ var now=new Date(),t=wt(now);
+ var h='<h1>جدول ابني المنظومة الشاملة</h1><div class="tabs">';
+ [['home','الرئيسية'],['vitals','القياسات'],['hw','الواجبات'],['vault','الصندوق'],['rem','التذكيرات'],['set','الإعدادات']].forEach(function(x){
+  h+='<button data-v="'+x[0]+'" class="'+(view===x[0]?'a':'')+'">'+x[1]+'</button>';
+ });
  h+='</div>';
- h+=view==='home'?homeView(now,t):view==='rem'?remForm()+remList():view==='lst'?listsView():schView(t);
- el.innerHTML=h}
+
+ if(view==='home') h+=homeView(now,t);
+ else if(view==='vitals') h+=vitalsView();
+ else if(view==='hw') h+=homeworkView();
+ else if(view==='vault') h+=vaultView();
+ else if(view==='rem') h+=remForm();
+ else if(view==='set') h+=settingsView();
+
+ el.innerHTML=h;
+}
+
+/* ---------- EVENT LISTENERS ---------- */
 document.addEventListener('click',function(ev){
  var c=ev.target,b=c.closest&&c.closest('button');
  if(b){var q=b.dataset;
   if(q.set)setThis(q.set);
   else if(q.v){view=q.v;render()}
-  else if(q.reset){S.ref=null;save();render()}
-  else if(q.chip){F.n=q.chip;render()}
-  else if(q.who){F.w=q.who;render()}
-  else if(q.day!==undefined){var i=+q.day,p=F.days.indexOf(i);if(p>=0)F.days.splice(p,1);else F.days.push(i);render()}
+  else if(q.addvital){
+   var sys=document.getElementById('v_sys').value, dia=document.getElementById('v_dia').value;
+   var glu=document.getElementById('v_glu').value, temp=document.getElementById('v_temp').value, weight=document.getElementById('v_weight').value;
+   if(!sys&&!glu&&!temp&&!weight)return;
+   S.vitals.push({date:dk(new Date())+' '+new Date().toLocaleTimeString().slice(0,5),sys:sys,dia:dia,glu:glu,temp:temp,weight:weight});
+   save();render();
+  }
+  else if(q.delvital!==undefined){S.vitals.splice(+q.delvital,1);save();render()}
+  else if(q.expvitals){
+   var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(S.vitals,null,2));
+   var dlAnchorElem = document.createElement('a');
+   dlAnchorElem.setAttribute("href",     dataStr     );
+   dlAnchorElem.setAttribute("download", "vitals_log.json");
+   dlAnchorElem.click();
+  }
+  else if(q.addhw){
+   var title=document.getElementById('hw_title').value, subject=document.getElementById('hw_subject').value;
+   var dueDate=document.getElementById('hw_date').value, time=document.getElementById('hw_time').value;
+   if(!title||!dueDate)return;
+   var r={id:Date.now()%2000000000,t:time,n:'📚 واجب: '+title+' ('+subject+')',date:dueDate,pre:true};
+   S.homework.push({title:title,subject:subject,dueDate:dueDate,t:time});
+   S.rem.push(r);save();schedRem(r);render();
+  }
+  else if(q.delhw!==undefined){S.homework.splice(+q.delhw,1);save();render()}
+  else if(q.setpin){
+   var pin=document.getElementById('new_pin').value;
+   if(pin.length>=4){S.vault.pin=pin;vaultUnlocked=true;save();render()}
+  }
+  else if(q.unlock){
+   var pin2=document.getElementById('enter_pin').value;
+   if(pin2===S.vault.pin){vaultUnlocked=true;render()}else alert('كود سري خاطئ!');
+  }
+  else if(q.lock){vaultUnlocked=false;render()}
+  else if(q.savevault){
+   S.vault.info=document.getElementById('vault_info').value;save();alert('تم حفظ البيانات بنجاح!');
+  }
+  else if(q.savesos){
+   S.sos.name=document.getElementById('sos_name').value;
+   S.sos.phone=document.getElementById('sos_phone').value;
+   save();render();alert('تم حفظ رقم الطوارئ!');
+  }
+  else if(q.saveice){
+   S.ice.name=document.getElementById('ice_name').value;
+   S.ice.blood=document.getElementById('ice_blood').value;
+   S.ice.allergies=document.getElementById('ice_allergies').value;
+   S.ice.notes=document.getElementById('ice_notes').value;
+   save();render();alert('تم حفظ بطاقة ICE الطبية!');
+  }
   else if(q.add){
-   var o=F.type==='o';if(o&&!F.date){say('اختر تاريخ الموعد أولًا');render();return}
-   if(!o&&!F.days.length){say('اختر يومًا واحدًا على الأقل');render();return}
-   var r={id:Date.now()%2000000000,t:F.t||'08:00',n:(F.n||'').trim()||'تذكير',w:(F.w||'').trim(),c:dk(new Date())};
-   if(o){r.date=F.date;r.pre=!!F.pre}else{r.days=F.days.slice();r.wk=F.wk||'';r.rep=!!F.rep;if(F.st!==''&&F.st!=null)r.st=Math.max(0,parseInt(F.st,10)||0)}
-   S.rem.push(r);save();F.n='';F.st='';render();schedRem(r)}
-  else if(q.del){var dr=findRem(q.del);if(dr)unschedRem(dr);S.rem=S.rem.filter(function(r){return String(r.id)!==q.del});save();render()}
-  else if(q.test)testNotif();
-  else if(q.diag)diag();
-  else if(q.exact)exactSettings();
-  else if(q.addlist){
-   var items=(F.li||'').split('\n').map(function(s){return s.trim()}).filter(Boolean);
-   if(!(F.ln||'').trim()||!items.length)return;
-   S.lists.push({id:Date.now(),n:F.ln.trim(),items:items.map(function(t){return{t:t,ok:false}})});F.ln='';F.li='';save();render()}
-  else if(q.lrs){S.lists[+q.lrs].items.forEach(function(x){x.ok=false});save();render()}
-  else if(q.ldel){S.lists.splice(+q.ldel,1);save();render()}
-  else if(q.exp){var bk=document.getElementById('bk');bk.value=JSON.stringify(S);try{bk.select();navigator.clipboard&&navigator.clipboard.writeText(bk.value)}catch(e){}document.getElementById('bm').textContent='انسخ النص واحفظه في مكان آمن.'}
-  else if(q.imp){try{var n=JSON.parse(document.getElementById('bk').value);if(!n||typeof n!=='object')throw 0;S=n;fix();save();render();init()}catch(e){document.getElementById('bm').textContent='النص غير صالح.'}}
-  return}
- if(c.type==='checkbox'){
-  var q2=c.dataset;
-  if(q2.k){S.weeks[q2.k][q2.i].on=c.checked;save();schedEve()}
-  else if(q2.done){var r2=findRem(q2.done);if(r2){if(c.checked)markDone(r2,dk(new Date()));else unmark(r2,dk(new Date()));render()}}
-  else if(q2.li!==undefined){S.lists[+q2.li].items[+q2.ii].ok=c.checked;save();render()}
-  else if(q2.eve==='on'){S.eve.on=c.checked;save();schedEve()}}
+   var r={id:Date.now()%2000000000,t:F.t||'08:00',n:(F.n||'').trim()||'تذكير',c:dk(new Date())};
+   if(F.type==='o'){r.date=F.date}else{r.days=F.days.slice();r.rep=!!F.rep}
+   S.rem.push(r);save();schedRem(r);render();
+  }
+  return;
+ }
+ if(c.type==='checkbox'&&c.dataset.done){
+  var r2=findRem(c.dataset.done);if(r2){if(c.checked)markDone(r2,dk(new Date()));else unmark(r2,dk(new Date()));render()}
+ }
 });
-function onField(ev){
- var c = ev.target, q = c.dataset; if(!q) return;
- if(q.f){F[q.f]=c.type==='checkbox'?c.checked:c.value;if(q.f==='type')render()}
- else if(c.type==='text'&&q.k){S.weeks[q.k][q.i].t=c.value;save()}
- else if(q.eve==='t'&&c.type==='time'){S.eve.t=c.value||'20:00';save();schedEve()}}
-document.addEventListener('input',onField);document.addEventListener('change',onField);
-document.addEventListener('visibilitychange',function(){if(!document.hidden)checkExact()});
+
 render();init();
 </script>
 </body>
