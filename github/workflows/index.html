@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>جدول ابني - المنظومة الشاملة</title>
 <style>
-:root{--bg:#f6f5f1;--card:#fff;--tx:#1f2328;--mut:#6b7280;--ac:#1d6f5f;--acs:#dff1ec;--off:#e9e7e1;--bd:#e3e1da;--wr:#b45309;--danger:#dc2626;
-box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root{--bg:#f6f5f1;--card:#fff;--tx:#1f2328;--mut:#6b7280;--ac:#1d6f5f;--acs:#dff1ec;--off:#e9e7e1;--bd:#e3e1da;--wr:#b45309;--danger:#dc2626}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15181a;--card:#1f2326;--tx:#ececec;--mut:#9aa3ab;--ac:#4fc3a8;--acs:#1e3a34;--off:#2a2f33;--bd:#2f353a;--wr:#fbbf24;--danger:#ef4444;color-scheme:dark}}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;line-height:1.5}
+html{padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;line-height:1.5;padding-bottom:env(safe-area-inset-bottom,0px)}
 .w{max-width:520px;margin:0 auto;padding:16px}
 h1{font-size:20px;margin:4px 0 12px}
 .card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:14px;margin-bottom:12px}
@@ -55,6 +55,8 @@ function fix(){
  S.vault=S.vault||{pin:'',info:''};
  S.sos=S.sos||{name:'الطوارئ',phone:''};
  S.ice=S.ice||{name:'',blood:'',allergies:'',notes:''};
+ S.eve=S.eve||{on:false,t:'20:00'};
+ S.seq=S.seq||0;
  if(S.ref===undefined)S.ref=null
 }
 try{S=JSON.parse(localStorage.getItem('edt'))}catch(e){}
@@ -105,7 +107,7 @@ async function schedRem(r){
   var a=r.t.split(':'),h=+a[0],m=+a[1],now=new Date(),L=[],b=rk(r)*10000,d,i,j;
   if(r.date){
    var p=r.date.split('-');d=new Date(+p[0],p[1]-1,+p[2],h,m,0);
-   if(d>now)L.push(mk(r,b+800,d,r.n,r.date));
+   if(d>now&&!isDone(r,r.date))L.push(mk(r,b+800,d,r.n,r.date));
   }else{
    var days=14;
    for(i=0;i<days;i++){
@@ -157,7 +159,6 @@ function homeView(now,t){
  var e=S.weeks[t][now.getDay()],k=dk(now);
  var h='';
 
- // 1. عرض بطاقة الطوارئ الطبية بارزة في الأعلى إذا تم ملؤها
  if(S.ice.name){
   h+='<div class="ice-card"><div class="big s17" style="color:var(--danger)">🪪 بطاقة التعريف الطبية (ICE)</div>';
   h+='<div><b>الاسم:</b> '+esc(S.ice.name)+' | <b>فصيلة الدم:</b> '+esc(S.ice.blood||'غير محدد')+'</div>';
@@ -166,9 +167,8 @@ function homeView(now,t){
   h+='</div>';
  }
 
- // 2. زر الطوارئ السريع بارز
  if(S.sos.phone){
-  h+='<a href="tel:'+esc(S.sos.phone)+'" style="text-decoration:none"><button class="sos-btn">🚨 اتصال طوارئ سريع بـ ('+esc(S.sos.name')+')</button></a>';
+  h+='<a href="tel:'+esc(S.sos.phone)+'" style="text-decoration:none"><button class="sos-btn">🚨 اتصال طوارئ سريع بـ ('+esc(S.sos.name)+')</button></a>';
  }
 
  h+='<div class="card"><span class="badge">'+N[t]+'</span><div class="big">'+D[now.getDay()]+' '+now.getDate()+'/'+(now.getMonth()+1)+'</div>';
@@ -296,7 +296,12 @@ function render(){
 document.addEventListener('click',function(ev){
  var c=ev.target,b=c.closest&&c.closest('button');
  if(b){var q=b.dataset;
-  if(q.set)setThis(q.set);
+  if(q.day!==undefined){
+   var di=+q.day,p=F.days.indexOf(di);
+   if(p>=0)F.days.splice(p,1);else F.days.push(di);
+   render();return;
+  }
+  else if(q.set)setThis(q.set);
   else if(q.v){view=q.v;render()}
   else if(q.addvital){
    var sys=document.getElementById('v_sys').value, dia=document.getElementById('v_dia').value;
@@ -316,12 +321,24 @@ document.addEventListener('click',function(ev){
   else if(q.addhw){
    var title=document.getElementById('hw_title').value, subject=document.getElementById('hw_subject').value;
    var dueDate=document.getElementById('hw_date').value, time=document.getElementById('hw_time').value;
-   if(!title||!dueDate)return;
+   if(!title||!dueDate){alert('أدخل عنوان الواجب وتاريخ التسليم');return;}
    var r={id:Date.now()%2000000000,t:time,n:'📚 واجب: '+title+' ('+subject+')',date:dueDate,pre:true};
-   S.homework.push({title:title,subject:subject,dueDate:dueDate,t:time});
+   S.homework.push({title:title,subject:subject,dueDate:dueDate,t:time,rid:r.id});
    S.rem.push(r);save();schedRem(r);render();
   }
-  else if(q.delhw!==undefined){S.homework.splice(+q.delhw,1);save();render()}
+  else if(q.delhw!==undefined){
+   var i=+q.delhw,hw=S.homework[i];
+   if(hw&&hw.rid!==undefined){
+    for(var j=0;j<S.rem.length;j++){
+     if(String(S.rem[j].id)===String(hw.rid)){
+      var rr=S.rem.splice(j,1)[0];
+      if(rr)unschedRem(rr);
+      break;
+     }
+    }
+   }
+   S.homework.splice(i,1);save();render();
+  }
   else if(q.setpin){
    var pin=document.getElementById('new_pin').value;
    if(pin.length>=4){S.vault.pin=pin;vaultUnlocked=true;save();render()}
@@ -347,14 +364,32 @@ document.addEventListener('click',function(ev){
    save();render();alert('تم حفظ بطاقة ICE الطبية!');
   }
   else if(q.add){
-   var r={id:Date.now()%2000000000,t:F.t||'08:00',n:(F.n||'').trim()||'تذكير',c:dk(new Date())};
-   if(F.type==='o'){r.date=F.date}else{r.days=F.days.slice();r.rep=!!F.rep}
-   S.rem.push(r);save();schedRem(r);render();
+   if(F.type==='o'&&!F.date){alert('اختر تاريخ الموعد');return;}
+   if(F.type!=='o'&&!F.days.length){alert('اختر يومًا واحدًا على الأقل');return;}
+   var r2={id:Date.now()%2000000000,t:F.t||'08:00',n:(F.n||'').trim()||'تذكير',c:dk(new Date())};
+   if(F.type==='o'){r2.date=F.date}else{r2.days=F.days.slice();r2.rep=!!F.rep}
+   S.rem.push(r2);save();schedRem(r2);render();
   }
   return;
  }
- if(c.type==='checkbox'&&c.dataset.done){
-  var r2=findRem(c.dataset.done);if(r2){if(c.checked)markDone(r2,dk(new Date()));else unmark(r2,dk(new Date()));render()}
+});
+
+/* تحديث حقول نموذج التذكير عند الكتابة/التغيير */
+function syncF(e){
+ var el=e.target,k=el.dataset&&el.dataset.f;
+ if(!k)return;
+ if(k==='rep')F.rep=el.checked;else F[k]=el.value;
+ if(k==='type')render();
+}
+document.addEventListener('input',syncF);
+document.addEventListener('change',syncF);
+
+/* تفعيل/إلغاء تذكير من الصفحة الرئيسية عند الضغط على المربع أو اسمه */
+document.addEventListener('change',function(e){
+ var el=e.target;
+ if(el&&el.type==='checkbox'&&el.dataset&&el.dataset.done!==undefined){
+  var r=findRem(el.dataset.done);
+  if(r){if(el.checked)markDone(r,dk(new Date()));else unmark(r,dk(new Date()));render()}
  }
 });
 
