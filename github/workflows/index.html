@@ -90,7 +90,7 @@ function ensure(){
 function mk(r,id,at,body,day){return{id:id,title:tt(r),body:body,channelId:'meds',actionTypeId:'REM',extra:{rid:r.id,day:day},schedule:{at:at,allowWhileIdle:true}}}
 async function unschedRem(r){
  if(!LN)return;
- try{var ids=[{id:nid(r)}],b=rk(r)*1000,i;for(i=0;i<160;i++)ids.push({id:b+i});for(i=800;i<803;i++)ids.push({id:b+i});await LN.cancel({notifications:ids})}catch(e){}}
+ try{var ids=[],b=rk(r)*1000,i;for(i=0;i<500;i++)ids.push({id:b+i});await LN.cancel({notifications:ids})}catch(e){}}
 async function schedRem(r){
  if(!await ensure())return;
  try{
@@ -107,15 +107,18 @@ async function schedRem(r){
    for(i=0;i<days;i++){
     d=new Date(now.getFullYear(),now.getMonth(),now.getDate()+i,h,m,0);
     var y=dk(d);if(d<=now||!due(r,d)||isDone(r,y))continue;
-    var n=(dn(d)%40)*4;
-    // الإشعار الأساسي في وقته المحدد
-    L.push(mk(r,b+n,d,r.n,y));
-    // تكرار الإشعار كل 10 دقائق (3 مرات إضافية) حتى يضغط المستخدم "تم"
-    if(r.rep) for(j=1;j<=3;j++) L.push(mk(r,b+n+j,new Date(d.getTime()+j*6e5),'(تذكير متكرر) '+r.n,y));
+    var baseId=b + (i * 10);
+    L.push(mk(r, baseId, d, r.n, y));
+    if(r.rep){
+     for(j=1; j<=3; j++){
+      var repeatTime = new Date(d.getTime() + j * 6e5);
+      L.push(mk(r, baseId + j, repeatTime, '(تنبيه متكرر) ' + r.n, y));
+     }
+    }
    }
   }
   if(L.length)await LN.schedule({notifications:L});
-  var pe=await LN.getPending();say('تمت جدولة «'+r.n+'» مع التكرار (المجدولة: '+pe.notifications.length+')')
+  var pe=await LN.getPending();say('تمت جدولة التذكير بنجاح (المجدولة: '+pe.notifications.length+')')
  }catch(e){say('خطأ: '+String(e&&e.message||e))}}
 async function schedEve(){
  if(!LN||S.ref===null)return;
@@ -132,7 +135,7 @@ async function schedEve(){
  }catch(e){say('خطأ: '+String(e&&e.message||e))}}
 async function cancelFollow(r,day){
  if(!LN)return;
- try{var n=(dnS(day)%40)*4+rk(r)*1000;await LN.cancel({notifications:[{id:n},{id:n+1},{id:n+2},{id:n+3}]})}catch(e){}}
+ try{await unschedRem(r); await schedRem(r);}catch(e){}}
 async function lowStock(r){
  if(!await ensure())return;
  try{await LN.schedule({notifications:[{id:1700000000+rk(r),title:'⚠️ ينقص الدواء',body:r.n+': بقي '+r.st,channelId:'meds',schedule:{at:new Date(Date.now()+2000),allowWhileIdle:true}}]})}catch(e){}}
@@ -151,8 +154,12 @@ async function testNotif(){
  if(!LN){sy('خاصية الإشعارات غير متوفرة.');return}
  try{
   if(!await ensure())return;
-  await LN.schedule({notifications:[{id:999999,title:'⏰ اختبار التكرار',body:'سيتكرر الإشعار حتى تلغيه',channelId:'meds',schedule:{at:new Date(Date.now()+5000),allowWhileIdle:true}}]});
-  sy('أغلق التطبيق وانتظر 5 ثوانٍ.')
+  var now = Date.now();
+  await LN.schedule({notifications:[
+   {id:999901,title:'⏰ اختبار 1',body:'الإشعار الأساسي وصل',channelId:'meds',schedule:{at:new Date(now+5000),allowWhileIdle:true}},
+   {id:999902,title:'⏰ اختبار 2 (بعد 10 ث)',body:'التكرار الأول يعمل',channelId:'meds',schedule:{at:new Date(now+15000),allowWhileIdle:true}}
+  ]});
+  sy('تم جدولة اختبار التكرار. انتظر 5 ثوانٍ ثم 15 ثانية.')
  }catch(e){sy('خطأ: '+String(e&&e.message||e))}}
 var exactDenied=false;
 async function checkExact(){
@@ -282,7 +289,7 @@ document.addEventListener('click',function(ev){
   else if(q2.eve==='on'){S.eve.on=c.checked;save();schedEve()}}
 });
 function onField(ev){
- var c=ev.target,q=c.dataset;if(!q)return;
+ var c = ev.target, q = c.dataset; if(!q) return;
  if(q.f){F[q.f]=c.type==='checkbox'?c.checked:c.value;if(q.f==='type')render()}
  else if(c.type==='text'&&q.k){S.weeks[q.k][q.i].t=c.value;save()}
  else if(q.eve==='t'&&c.type==='time'){S.eve.t=c.value||'20:00';save();schedEve()}}
