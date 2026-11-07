@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>جدول ابني</title>
+<title>Remind me</title>
 <style>
 :root{--bg:#f6f5f1;--card:#fff;--tx:#1f2328;--mut:#6b7280;--ac:#1d6f5f;--acs:#dff1ec;--off:#e9e7e1;--bd:#e3e1da;--wr:#b45309;--danger:#dc2626}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15181a;--card:#1f2326;--tx:#ececec;--mut:#9aa3ab;--ac:#4fc3a8;--acs:#1e3a34;--off:#2a2f33;--bd:#2f353a;--wr:#fbbf24;--danger:#ef4444;color-scheme:dark}}
@@ -41,7 +41,9 @@ input[type=checkbox]{width:22px;height:22px;accent-color:var(--ac);flex:none}
 <body>
 <div class="w" id="app"></div>
 <script>
-var D=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'],N={A:'الأسبوع «أ»',B:'الأسبوع «ب»'};
+var DD={ar:['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'],fr:['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'],en:['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']};
+var NN={ar:{A:'الأسبوع «أ»',B:'الأسبوع «ب»'},fr:{A:'Semaine « A »',B:'Semaine « B »'},en:{A:'Week “A”',B:'Week “B”'}};
+var D=DD.ar,N=NN.ar,L='ar';
 var S=null,view='home',msg='',ready=null,vaultUnlocked=false,exactDenied=false;
 var F={type:'d',t:'08:00',n:'',date:'',days:[0,1,2,3,4,5,6],pre:true,rep:true};
 function blank(){var o={};for(var i=0;i<7;i++)o[i]={on:false,t:''};return o}
@@ -53,10 +55,13 @@ function fix(){
  if(S.ref===undefined)S.ref=null}
 try{S=JSON.parse(localStorage.getItem('edt'))}catch(e){}
 if(!S||typeof S!=='object')S={};fix();
+L=DD[S.lang]?S.lang:'ar';D=DD[L];N=NN[L];
 function save(){try{localStorage.setItem('edt',JSON.stringify(S))}catch(e){}}
 function sun(d){var x=new Date(d.getFullYear(),d.getMonth(),d.getDate());x.setDate(x.getDate()-x.getDay());return x}
 function wt(d){var w=Math.round((sun(d)-new Date(S.ref))/604800000);return(((w%2)+2)%2===0)?'A':'B'}
-function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function escp(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function U(x){return '\u0001'+x+'\u0002'}
+function esc(s){return U(escp(s))}
 function pad(n){return(n<10?'0':'')+n}
 function dk(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
 function dnS(s){var p=s.split('-');return Math.floor(Date.UTC(+p[0],p[1]-1,+p[2])/864e5)}
@@ -71,17 +76,165 @@ function sortedRem(l){return l.slice().sort(function(a,b){return a.t<b.t?-1:a.t>
 function isDone(r,k){return !!(S.log[k]&&S.log[k][r.id])}
 function findRem(id){return S.rem.filter(function(r){return String(r.id)===String(id)})[0]}
 function rk(r){if(!r.k){S.seq=(S.seq||0)+1;r.k=S.seq;save()}return r.k}
-function tt(r){return r.w?'⏰ '+r.w:'⏰ تذكير'}
+function tt(r){return r.w?'⏰ '+r.w:tr('⏰ تذكير')}
+
+/* ---------- i18n ---------- */
+var TR=[
+["الإذن غير ممنوح. فعّل الإشعارات من إعدادات الهاتف.","Autorisation refusée. Activez les notifications dans les paramètres du téléphone.","Permission denied. Enable notifications in your phone settings."],
+["التذكيرات والأدوية","Rappels et médicaments","Reminders & medication"],
+["✓ تم","✓ Fait","✓ Done"],
+["⏰ بعد 10 دقائق","⏰ Dans 10 min","⏰ In 10 min"],
+["غدًا:","Demain :","Tomorrow:"],
+["غدًا","Demain","Tomorrow"],
+["بعد ساعة:","Dans 1 h :","In 1 hour:"],
+["(تنبيه متكرر)","(rappel répété)","(repeated alert)"],
+["تمت جدولة","Programmé","Scheduled"],
+["إجمالي الإشعارات المجدولة:","total des notifications programmées :","total scheduled notifications:"],
+["خطأ:","Erreur :","Error:"],
+["المدرسة","École","School"],
+["لا يدرس اليوم","Pas de cours aujourd’hui","No school today"],
+["يدرس اليوم","A cours aujourd’hui","Has school today"],
+["يدرس","a cours","has school"],
+["عطلة","congé","day off"],
+["خاصية الإشعارات غير متوفرة (أنت خارج تطبيق أندرويد).","Notifications indisponibles (hors application Android).","Notifications unavailable (not running in the Android app)."],
+["خاصية الإشعارات غير متوفرة.","Notifications indisponibles.","Notifications unavailable."],
+["الإشعارات:","Notifications :","Notifications:"],
+["المنبهات الدقيقة غير مفعّلة، وقد تتأخر الإشعارات أو لا تصل.","Les alarmes exactes sont désactivées : les notifications peuvent être retardées ou manquées.","Exact alarms are off: notifications may be delayed or missed."],
+["المنبهات الدقيقة:","Alarmes exactes :","Exact alarms:"],
+["المجدولة:","Programmées :","Scheduled:"],
+["الإشعارات تعمل","Les notifications fonctionnent","Notifications work"],
+["اختبار","Test","Test"],
+["أغلق التطبيق وانتظر","Fermez l’application et attendez","Close the app and wait"],
+["ثوانٍ.","secondes.","seconds."],
+["بطاقة التعريف الطبية","Carte médicale","Medical ID card"],
+["الاسم:","Nom :","Name:"],
+["فصيلة الدم:","Groupe sanguin :","Blood type:"],
+["غير محدد","non précisé","not specified"],
+["الحساسية:","Allergies :","Allergies:"],
+["ملاحظات:","Notes :","Notes:"],
+["اتصال:","Appeler :","Call:"],
+["تفعيلها الآن","Activer maintenant","Enable now"],
+["تذكيراتي اليوم","Mes rappels du jour","My reminders today"],
+["لا تذكيرات اليوم.","Aucun rappel aujourd’hui.","No reminders today."],
+["الأيام السبعة القادمة","7 prochains jours","Next 7 days"],
+[">الحالي<",">Actuelle<",">Current<"],
+["ضع علامة على الأيام التي يدرس فيها ابنك:","Cochez les jours où votre enfant a cours :","Tick the days your child has school:"],
+["المواد / ملاحظة","Matières / remarque","Subjects / note"],
+["إشعار مسائي عن الغد","Notification du soir pour demain","Evening notice for tomorrow"],
+["أخبرني كل مساء هل يدرس ابني غدًا","Dites-moi chaque soir si mon enfant a cours demain","Tell me each evening if my child has school tomorrow"],
+["الوقت:","Heure :","Time:"],
+["تغيير نوع الأسبوع الحالي","Changer le type de la semaine en cours","Change current week type"],
+["تذكير جديد","Nouveau rappel","New reminder"],
+["متكرر","Récurrent","Recurring"],
+["موعد مرة واحدة","Rendez-vous unique","One-time appointment"],
+["اسم الدواء أو المهمة","Nom du médicament ou de la tâche","Medication or task name"],
+["الأيام:","Jours :","Days:"],
+["كرّر التنبيه كل 10 دقائق (3 مرات) حتى أضغط «تم»","Répéter toutes les 10 min (3 fois) jusqu’à « Fait »","Repeat every 10 min (3 times) until I tap “Done”"],
+["نبّهني قبله بيوم وقبله بساعة","Me prévenir la veille et 1 h avant","Alert me 1 day and 1 hour before"],
+["+ إضافة رقم طوارئ","+ Ajouter un numéro d’urgence","+ Add emergency number"],
+["+ إضافة واجب وتنبيه","+ Ajouter un devoir et une alerte","+ Add homework & alert"],
+["+ إضافة","+ Ajouter","+ Add"],
+["لا توجد تذكيرات.","Aucun rappel.","No reminders."],
+["كل التذكيرات","Tous les rappels","All reminders"],
+["،",",",","],
+["يوميًا","Tous les jours","Daily"],
+["تم / حذف","Fait / supprimer","Done / delete"],
+["حذف","Supprimer","Delete"],
+["سجل القياسات الحيوية","Suivi des mesures","Vitals log"],
+["الضغط العالي (120)","Tension haute (120)","Systolic (120)"],
+["الضغط المنخفض (80)","Tension basse (80)","Diastolic (80)"],
+["السكر (مغ/دسل)","Glycémie (mg/dl)","Glucose (mg/dl)"],
+["الحرارة (م°)","Température (°C)","Temperature (°C)"],
+["الوزن (كغ)","Poids (kg)","Weight (kg)"],
+["+ تسجيل القياس","+ Enregistrer la mesure","+ Save measurement"],
+["السجلات الأخيرة","Derniers relevés","Recent records"],
+["لا توجد قياسات مسجلة.","Aucune mesure enregistrée.","No measurements recorded."],
+["ضغط:","Tension :","BP:"],
+["سكر:","Glycémie :","Glucose:"],
+["حرارة:","Temp. :","Temp:"],
+["وزن:","Poids :","Weight:"],
+["كغ","kg","kg"],
+["نسخ السجل كنص","Copier le suivi en texte","Copy log as text"],
+["منبه الواجبات المدرسية","Rappel des devoirs","Homework reminders"],
+["عنوان الواجب","Titre du devoir","Homework title"],
+["المادة الدراسية","Matière","Subject"],
+["التسليم:","À rendre :","Due:"],
+["قائمة الواجبات","Liste des devoirs","Homework list"],
+["لا توجد واجبات حالية.","Aucun devoir en cours.","No current homework."],
+["تسليم:","À rendre :","Due:"],
+["الساعة","à","at"],
+["واجب:","Devoir :","Homework:"],
+["صندوق المعلومات المهمة","Coffre d’infos importantes","Important info vault"],
+["أنشئ كودًا سريًا (4 أرقام على الأقل):","Créez un code secret (4 chiffres minimum) :","Create a secret code (at least 4 digits):"],
+["الكود السري","Code secret","Secret code"],
+["حفظ الكود","Enregistrer le code","Save code"],
+["أدخل الكود لفتح الصندوق","Entrez le code pour ouvrir","Enter code to open"],
+["فتح","Ouvrir","Open"],
+["أرقام التأمين، ملاحظات خاصة...","N° d’assurance, notes privées...","Insurance numbers, private notes..."],
+[">حفظ<",">Enregistrer<",">Save<"],
+["إغلاق","Fermer","Close"],
+["الكود يخفي المعلومات داخل التطبيق فقط، ولا يشفّرها. لا تكتب فيها أسرارًا بالغة الخطورة.","Le code masque seulement les infos dans l’application, sans les chiffrer. N’y écrivez pas de secrets très sensibles.","The code only hides the info inside the app; it does not encrypt it. Don’t store highly sensitive secrets here."],
+["أرقام الطوارئ","Numéros d’urgence","Emergency numbers"],
+["الاسم (الابن، الطبيب، الإسعاف...)","Nom (enfant, médecin, urgences...)","Name (child, doctor, ambulance...)"],
+["رقم الهاتف","Numéro de téléphone","Phone number"],
+["الاسم الكامل","Nom complet","Full name"],
+["فصيلة الدم","Groupe sanguin","Blood type"],
+["الحساسية","Allergies","Allergies"],
+["ملاحظات صحية حرجة...","Notes de santé critiques...","Critical health notes..."],
+["حفظ البطاقة","Enregistrer la carte","Save card"],
+["فحص الإشعارات","Vérifier les notifications","Notification check"],
+[">فحص<",">Vérifier<",">Check<"],
+[">المنبهات<",">Alarmes<",">Alarms<"],
+["نسخ احتياطي","Sauvegarde","Backup"],
+["هنا تظهر بياناتك للنسخ، أو الصق نسخة سابقة للاسترجاع","Vos données apparaissent ici pour copie, ou collez une sauvegarde pour restaurer","Your data appears here to copy, or paste a previous backup to restore"],
+["إظهار البيانات","Afficher les données","Show data"],
+["استرجاع","Restaurer","Restore"],
+["انسخ النص واحفظه في مكان آمن.","Copiez ce texte et gardez-le en lieu sûr.","Copy this text and keep it somewhere safe."],
+["النص غير صالح.","Texte invalide.","Invalid text."],
+["أي أسبوع نحن فيه الآن؟","Quelle semaine sommes-nous ?","Which week is it now?"],
+["اختر نوع هذا الأسبوع، وسيتناوب التطبيق تلقائيًا بعده: أ ← ب ← أ …","Choisissez le type de cette semaine ; l’application alternera ensuite automatiquement : A → B → A …","Pick this week’s type; the app will then alternate automatically: A → B → A …"],
+["الرئيسية","Accueil","Home"],
+["الجدول","Planning","Schedule"],
+["التذكيرات","Rappels","Reminders"],
+["القياسات","Mesures","Vitals"],
+["الواجبات","Devoirs","Homework"],
+["الصندوق","Coffre","Vault"],
+["الإعدادات","Réglages","Settings"],
+["اختر تاريخ الموعد","Choisissez la date du rendez-vous","Choose the appointment date"],
+["اختر يومًا واحدًا على الأقل","Choisissez au moins un jour","Choose at least one day"],
+["أدخل عنوان الواجب وتاريخ التسليم","Saisissez le titre et la date limite","Enter the title and due date"],
+["4 أرقام على الأقل","Au moins 4 chiffres","At least 4 digits"],
+["كود سري خاطئ!","Code incorrect !","Wrong code!"],
+["تم الحفظ","Enregistré","Saved"],
+["أدخل رقم الهاتف","Saisissez le numéro","Enter the phone number"],
+["تم حفظ البطاقة","Carte enregistrée","Card saved"],
+["تذكير","Rappel","Reminder"],
+["طوارئ","Urgence","Emergency"]
+];
+var TRK=TR.map(function(r){return r[0]}).sort(function(a,b){return b.length-a.length}),TRM={};
+TR.forEach(function(r){TRM[r[0]]=[r[1],r[2]]});
+function trSeg(t,i){TRK.forEach(function(k){if(t.indexOf(k)>=0)t=t.split(k).join(TRM[k][i])});return t}
+function tr(s){
+ s=String(s);
+ if(L==='ar')return s.replace(/[\u0001\u0002]/g,'');
+ var i=L==='fr'?0:1,out='',p=s.split('\u0001');
+ out=trSeg(p[0],i);
+ for(var j=1;j<p.length;j++){var q=p[j].split('\u0002');out+=q[0]+(q.length>1?trSeg(q.slice(1).join(''),i):'')}
+ return out}
+var _al=window.alert;window.alert=function(m){_al.call(window,tr(m))};
+function applyDir(){try{var e=document.documentElement;e.dir=L==='ar'?'rtl':'ltr';e.lang=L;document.title='Remind me'}catch(x){}}
+function setLang(l){if(!DD[l])return;L=l;S.lang=l;D=DD[l];N=NN[l];save();applyDir();ready=null;render();init()}
+function langBar(){return'<div class="chips">'+['ar:العربية','fr:Français','en:English'].map(function(x){var a=x.split(':');return'<button data-lang="'+a[0]+'"'+(L===a[0]?' class="a"':'')+'>'+a[1]+'</button>'}).join('')+'</div>'}
 /* ---------- notifications ---------- */
 var CAP=window.Capacitor,NATIVE=!!(CAP&&CAP.isNativePlatform&&CAP.isNativePlatform()),LN=null;
 if(NATIVE){try{LN=(CAP.Plugins&&CAP.Plugins.LocalNotifications)||(CAP.registerPlugin?CAP.registerPlugin('LocalNotifications'):null)}catch(e){}}
-function say(m){msg=m;var el=document.getElementById('ns');if(el)el.textContent=m}
+function say(m){msg=m;var el=document.getElementById('ns');if(el)el.textContent=tr(m)}
 function ensure(){
  if(!LN)return Promise.resolve(false);
  if(!ready)ready=(async function(){
   var p=await LN.requestPermissions();if(p.display!=='granted'){say('الإذن غير ممنوح. فعّل الإشعارات من إعدادات الهاتف.');return false}
-  try{await LN.createChannel({id:'meds',name:'التذكيرات والأدوية',importance:5,vibration:true,visibility:1})}catch(e){}
-  try{await LN.registerActionTypes({types:[{id:'REM',actions:[{id:'done',title:'✓ تم'},{id:'snooze',title:'⏰ بعد 10 دقائق'}]}]})}catch(e){}
+  try{await LN.createChannel({id:'meds',name:tr('التذكيرات والأدوية'),importance:5,vibration:true,visibility:1})}catch(e){}
+  try{await LN.registerActionTypes({types:[{id:'REM',actions:[{id:'done',title:tr('✓ تم')},{id:'snooze',title:tr('⏰ بعد 10 دقائق')}]}]})}catch(e){}
   return true})();
  return ready}
 function mk(r,id,at,body,day){return{id:id,title:tt(r),body:body,channelId:'meds',actionTypeId:'REM',extra:{rid:r.id,day:day},schedule:{at:at,allowWhileIdle:true}}}
@@ -97,16 +250,16 @@ async function schedRem(r){
    var p=r.date.split('-');d=new Date(+p[0],p[1]-1,+p[2],h,m,0);
    if(d>now&&!isDone(r,r.date))L.push(mk(r,b+800,d,r.n,r.date));
    if(r.pre){var d1=new Date(d.getTime()-864e5),d2=new Date(d.getTime()-36e5);
-    if(d1>now)L.push(mk(r,b+801,d1,'غدًا: '+r.n,r.date));
-    if(d2>now)L.push(mk(r,b+802,d2,'بعد ساعة: '+r.n,r.date))}
+    if(d1>now)L.push(mk(r,b+801,d1,tr('غدًا:')+' '+r.n,r.date));
+    if(d2>now)L.push(mk(r,b+802,d2,tr('بعد ساعة:')+' '+r.n,r.date))}
   }else{
    for(i=0;i<(r.rep?10:30);i++){
     d=new Date(now.getFullYear(),now.getMonth(),now.getDate()+i,h,m,0);
     var y=dk(d);if(d<=now||!due(r,d)||isDone(r,y))continue;
     L.push(mk(r,b+i*20,d,r.n,y));
-    if(r.rep)for(j=1;j<=3;j++)L.push(mk(r,b+i*20+j,new Date(d.getTime()+j*6e5),'(تنبيه متكرر) '+r.n,y))}}
+    if(r.rep)for(j=1;j<=3;j++)L.push(mk(r,b+i*20+j,new Date(d.getTime()+j*6e5),tr('(تنبيه متكرر)')+' '+r.n,y))}}
   if(L.length)await LN.schedule({notifications:L});
-  var pe=await LN.getPending();say('تمت جدولة «'+r.n+'» (إجمالي الإشعارات المجدولة: '+pe.notifications.length+')')
+  var pe=await LN.getPending();say('تمت جدولة «'+U(r.n)+'» (إجمالي الإشعارات المجدولة: '+pe.notifications.length+')')
  }catch(e){say('خطأ: '+String(e&&e.message||e))}}
 async function schedEve(){
  if(!LN||S.ref===null)return;
@@ -118,7 +271,7 @@ async function schedEve(){
   for(i=0;i<14;i++){
    var d=new Date(now.getFullYear(),now.getMonth(),now.getDate()+i,+a[0],+a[1],0);if(d<=now)continue;
    var g=new Date(d.getFullYear(),d.getMonth(),d.getDate()+1),x=S.weeks[wt(g)][g.getDay()];
-   L.push({id:1900000000+dn(d)%14,title:'📚 المدرسة',body:'غدًا ('+D[g.getDay()]+') '+(x.on?'يدرس'+(x.t?' — '+x.t:''):'عطلة'),channelId:'meds',schedule:{at:d,allowWhileIdle:true}})}
+   L.push({id:1900000000+dn(d)%14,title:tr('📚 المدرسة'),body:tr('غدًا')+' ('+D[g.getDay()]+') '+(x.on?tr('يدرس')+(x.t?' — '+x.t:''):tr('عطلة')),channelId:'meds',schedule:{at:d,allowWhileIdle:true}})}
   if(L.length)await LN.schedule({notifications:L})
  }catch(e){}}
 function markDone(r,day){S.log[day]=S.log[day]||{};if(S.log[day][r.id])return;S.log[day][r.id]=true;save();if(LN)schedRem(r)}
@@ -142,7 +295,7 @@ async function diag(){
 async function testNotif(){
  if(!LN){say('خاصية الإشعارات غير متوفرة.');return}
  try{if(!await ensure())return;
-  await LN.schedule({notifications:[{id:999999,title:'⏰ اختبار',body:'الإشعارات تعمل',channelId:'meds',schedule:{at:new Date(Date.now()+5000),allowWhileIdle:true}}]});
+  await LN.schedule({notifications:[{id:999999,title:tr('⏰ اختبار'),body:tr('الإشعارات تعمل'),channelId:'meds',schedule:{at:new Date(Date.now()+5000),allowWhileIdle:true}}]});
   say('أغلق التطبيق وانتظر 5 ثوانٍ.')}catch(e){say('خطأ: '+String(e&&e.message||e))}}
 async function init(){
  if(!LN)return;
@@ -194,12 +347,12 @@ function remView(){
   D.forEach(function(x,i){h+=chip('data-day="'+i+'"',x,F.days.indexOf(i)>=0)});
   h+='</div><label class="row"><input type="checkbox" data-f="rep" '+(F.rep?'checked':'')+'><span>كرّر التنبيه كل 10 دقائق (3 مرات) حتى أضغط «تم»</span></label>'
  }else h+='<label class="row"><input type="checkbox" data-f="pre" '+(F.pre?'checked':'')+'><span>نبّهني قبله بيوم وقبله بساعة</span></label>';
- h+='<button class="btn p mt" data-add="1" style="width:100%">+ إضافة</button><p class="hint" id="ns">'+esc(msg)+'</p></div>';
+ h+='<button class="btn p mt" data-add="1" style="width:100%">+ إضافة</button><p class="hint" id="ns">'+escp(msg)+'</p></div>';
  h+='<div class="card"><div class="big s17">كل التذكيرات</div>';
  if(!S.rem.length)h+='<p class="hint">لا توجد تذكيرات.</p>';
  sortedRem(S.rem).forEach(function(r){
   var info=r.date?r.date+(r.pre?' · 🔔':''):(r.days&&r.days.length<7?r.days.map(function(i){return D[i].slice(0,3)}).join('،'):'يوميًا')+(r.rep?' · 🔁':'');
-  h+='<div class="row"><span class="day" style="width:58px">'+r.t+'</span><span class="sub" style="color:inherit">'+esc(r.n)+'<br><small class="offt">'+esc(info)+'</small></span><button class="btn danger" style="flex:none" data-delrem="'+r.id+'">حذف</button></div>'});
+  h+='<div class="row"><span class="day" style="width:58px">'+r.t+'</span><span class="sub" style="color:inherit">'+esc(r.n)+'<br><small class="offt">'+escp(info)+'</small></span><button class="btn danger" style="flex:none" data-delrem="'+r.id+'">حذف</button></div>'});
  return h+'</div>'}
 function vitalsView(){
  var h='<div class="card"><div class="big s17">📊 سجل القياسات الحيوية</div><div class="row"><input type="number" id="v_sys" placeholder="الضغط العالي (120)"><input type="number" id="v_dia" placeholder="الضغط المنخفض (80)"></div><div class="row"><input type="number" id="v_glu" placeholder="السكر (مغ/دسل)"><input type="number" step="0.1" id="v_temp" placeholder="الحرارة (م°)"></div><div class="row"><input type="number" step="0.1" id="v_weight" placeholder="الوزن (كغ)"></div><button class="btn p mt" data-addvital="1" style="width:100%">+ تسجيل القياس</button></div>';
@@ -219,22 +372,22 @@ function vaultView(){
  if(!vaultUnlocked)return h+'<div class="row"><input type="password" id="enter_pin" placeholder="أدخل الكود لفتح الصندوق"></div><button class="btn p mt" data-unlock="1" style="width:100%">🔓 فتح</button></div>';
  return h+'<textarea id="vault_info" rows="5" placeholder="أرقام التأمين، ملاحظات خاصة...">'+esc(S.vault.info)+'</textarea><div class="row"><button class="btn p" data-savevault="1">حفظ</button><button class="btn" data-lock="1">🔒 إغلاق</button></div><p class="hint">الكود يخفي المعلومات داخل التطبيق فقط، ولا يشفّرها. لا تكتب فيها أسرارًا بالغة الخطورة.</p></div>'}
 function setView(){
- var h='<div class="card"><div class="big s17">🚨 أرقام الطوارئ</div>';
+ var h='<div class="card"><div class="big s17">🌐 Language / Langue / اللغة</div>'+langBar()+'</div><div class="card"><div class="big s17">🚨 أرقام الطوارئ</div>';
  S.sos.forEach(function(c,i){h+='<div class="row"><span class="sub" style="color:inherit"><b>'+esc(c.name)+'</b><br>'+esc(c.phone)+'</span><button class="btn danger" style="flex:none" data-delsos="'+i+'">حذف</button></div>'});
  h+='<div class="row"><input type="text" id="sos_name" placeholder="الاسم (الابن، الطبيب، الإسعاف...)"></div><div class="row"><input type="text" id="sos_phone" placeholder="رقم الهاتف"></div><button class="btn p mt" data-addsos="1" style="width:100%">+ إضافة رقم طوارئ</button></div>';
  h+='<div class="card"><div class="big s17">🪪 بطاقة التعريف الطبية (ICE)</div><div class="row"><input type="text" id="ice_name" placeholder="الاسم الكامل" value="'+esc(S.ice.name)+'"></div><div class="row"><input type="text" id="ice_blood" placeholder="فصيلة الدم" value="'+esc(S.ice.blood)+'"></div><div class="row"><input type="text" id="ice_allergies" placeholder="الحساسية" value="'+esc(S.ice.allergies)+'"></div><div class="row"><textarea id="ice_notes" rows="2" placeholder="ملاحظات صحية حرجة...">'+esc(S.ice.notes)+'</textarea></div><button class="btn p mt" data-saveice="1" style="width:100%">حفظ البطاقة</button></div>';
- h+='<div class="card"><div class="big s17">🔔 فحص الإشعارات</div><div class="row"><button class="btn" data-test="1">اختبار</button><button class="btn" data-diag="1">فحص</button><button class="btn" data-exact="1">المنبهات</button></div><p class="hint" id="ns">'+esc(msg)+'</p></div>';
+ h+='<div class="card"><div class="big s17">🔔 فحص الإشعارات</div><div class="row"><button class="btn" data-test="1">اختبار</button><button class="btn" data-diag="1">فحص</button><button class="btn" data-exact="1">المنبهات</button></div><p class="hint" id="ns">'+escp(msg)+'</p></div>';
  return h+'<div class="card"><div class="big s17">💾 نسخ احتياطي</div><textarea id="bk" rows="3" placeholder="هنا تظهر بياناتك للنسخ، أو الصق نسخة سابقة للاسترجاع"></textarea><div class="row"><button class="btn" data-exp="1">إظهار البيانات</button><button class="btn" data-imp="1">استرجاع</button></div><p class="hint" id="bm"></p></div>'}
 function render(){
  var el=document.getElementById('app');
  if(S.ref===null){
-  el.innerHTML='<h1>جدول ابني</h1><div class="card"><div class="big">أي أسبوع نحن فيه الآن؟</div><p class="hint">اختر نوع هذا الأسبوع، وسيتناوب التطبيق تلقائيًا بعده: أ ← ب ← أ …</p><div class="tabs"><button data-set="A">الأسبوع «أ»</button><button data-set="B">الأسبوع «ب»</button></div></div>';
+  el.innerHTML=tr('<h1>Remind me</h1>'+langBar()+'<div class="card"><div class="big">أي أسبوع نحن فيه الآن؟</div><p class="hint">اختر نوع هذا الأسبوع، وسيتناوب التطبيق تلقائيًا بعده: أ ← ب ← أ …</p><div class="tabs"><button data-set="A">'+N.A+'</button><button data-set="B">'+N.B+'</button></div></div>');
   return}
- var now=new Date(),t=wt(now),h='<h1>جدول ابني</h1><div class="tabs">';
+ var now=new Date(),t=wt(now),h='<h1>Remind me</h1><div class="tabs">';
  [['home','الرئيسية'],['sch','الجدول'],['rem','التذكيرات'],['vitals','القياسات'],['hw','الواجبات'],['vault','الصندوق'],['set','الإعدادات']].forEach(function(x){h+='<button data-v="'+x[0]+'" class="'+(view===x[0]?'a':'')+'">'+x[1]+'</button>'});
  h+='</div>';
  h+=view==='home'?homeView(now,t):view==='sch'?schView(t):view==='rem'?remView():view==='vitals'?vitalsView():view==='hw'?hwView():view==='vault'?vaultView():setView();
- el.innerHTML=h}
+ el.innerHTML=tr(h)}
 function val(id){var e=document.getElementById(id);return e?e.value:''}
 function delRem(id){
  var r=findRem(id);if(r)unschedRem(r);
@@ -244,13 +397,14 @@ document.addEventListener('click',function(ev){
  var c=ev.target,b=c.closest&&c.closest('button');
  if(b){var q=b.dataset;
   if(q.day!==undefined){var di=+q.day,p=F.days.indexOf(di);if(p>=0)F.days.splice(p,1);else F.days.push(di);render()}
+  else if(q.lang)setLang(q.lang);
   else if(q.set)setThis(q.set);
   else if(q.v){view=q.v;render()}
   else if(q.reset){S.ref=null;save();render()}
   else if(q.add){
    if(F.type==='o'&&!F.date){alert('اختر تاريخ الموعد');return}
    if(F.type!=='o'&&!F.days.length){alert('اختر يومًا واحدًا على الأقل');return}
-   var r={id:Date.now()%2000000000,t:F.t||'08:00',n:(F.n||'').trim()||'تذكير',c:dk(new Date())};
+   var r={id:Date.now()%2000000000,t:F.t||'08:00',n:(F.n||'').trim()||tr('تذكير'),c:dk(new Date())};
    if(F.type==='o'){r.date=F.date;r.pre=!!F.pre}else{r.days=F.days.slice();r.rep=!!F.rep}
    S.rem.push(r);save();F.n='';render();schedRem(r)}
   else if(q.delrem){delRem(q.delrem);render()}
@@ -263,14 +417,14 @@ document.addEventListener('click',function(ev){
   else if(q.addhw){
    var title=val('hw_title'),dd=val('hw_date');
    if(!title||!dd){alert('أدخل عنوان الواجب وتاريخ التسليم');return}
-   var sj=val('hw_subject'),tm=val('hw_time')||'18:00',r2={id:Date.now()%2000000000,t:tm,n:'📚 واجب: '+title+(sj?' ('+sj+')':''),date:dd,pre:true,c:dk(new Date())};
+   var sj=val('hw_subject'),tm=val('hw_time')||'18:00',r2={id:Date.now()%2000000000,t:tm,n:'📚 '+tr('واجب:')+' '+title+(sj?' ('+sj+')':''),date:dd,pre:true,c:dk(new Date())};
    S.homework.push({title:title,subject:sj,dueDate:dd,t:tm,rid:r2.id});S.rem.push(r2);save();render();schedRem(r2)}
   else if(q.delhw!==undefined){var hw=S.homework[+q.delhw];if(hw)delRem(hw.rid);else S.homework.splice(+q.delhw,1);save();render()}
   else if(q.setpin){var pin=val('new_pin');if(pin.length>=4){S.vault.pin=pin;vaultUnlocked=true;save();render()}else alert('4 أرقام على الأقل')}
   else if(q.unlock){if(val('enter_pin')===S.vault.pin){vaultUnlocked=true;render()}else alert('كود سري خاطئ!')}
   else if(q.lock){vaultUnlocked=false;render()}
   else if(q.savevault){S.vault.info=val('vault_info');save();alert('تم الحفظ')}
-  else if(q.addsos){var nm=val('sos_name').trim(),ph=val('sos_phone').trim();if(!ph){alert('أدخل رقم الهاتف');return}S.sos.push({name:nm||'طوارئ',phone:ph});save();render()}
+  else if(q.addsos){var nm=val('sos_name').trim(),ph=val('sos_phone').trim();if(!ph){alert('أدخل رقم الهاتف');return}S.sos.push({name:nm||tr('طوارئ'),phone:ph});save();render()}
   else if(q.delsos!==undefined){S.sos.splice(+q.delsos,1);save();render()}
   else if(q.saveice){S.ice={name:val('ice_name'),blood:val('ice_blood'),allergies:val('ice_allergies'),notes:val('ice_notes')};save();render();alert('تم حفظ البطاقة')}
   else if(q.test)testNotif();
@@ -289,7 +443,7 @@ function onField(ev){
  else if(q.done!==undefined&&c.type==='checkbox'){var r=findRem(q.done);if(r){if(c.checked)markDone(r,dk(new Date()));else unmark(r,dk(new Date()));render()}}}
 document.addEventListener('input',onField);document.addEventListener('change',onField);
 document.addEventListener('visibilitychange',function(){if(!document.hidden)checkExact()});
-render();init();
+applyDir();render();init();
 </script>
 </body>
 </html>
