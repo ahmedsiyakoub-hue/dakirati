@@ -71,6 +71,17 @@ input[type=checkbox]:checked{background:var(--ac)}input[type=checkbox]:checked::
 .kidc{background:var(--surf);border-radius:18px;padding:6px 14px;margin-top:10px}
 .lbox{background:var(--paper);border-radius:16px;padding:6px 12px;margin:2px 0 10px}
 .toast{position:fixed;left:16px;right:16px;top:calc(env(safe-area-inset-top,0px) + 12px);background:var(--ink);color:var(--paper);padding:12px 16px;border-radius:16px;font-weight:700;z-index:30;text-align:center}
+.tiles .tile:last-child:nth-child(odd){grid-column:1/-1}
+.xs{display:flex;gap:8px;margin-bottom:10px}
+.xsc{flex:1;background:var(--surf);border:1.5px solid var(--bd);border-radius:18px;padding:8px;text-align:center;display:flex;flex-direction:column;align-items:center}
+.xsc.on{border-color:var(--ac);background:var(--acs)}
+.xsc b{font-size:22px;font-weight:800;line-height:1.2}.xsc small{font-size:11px;color:var(--mut)}.xsc i{font-style:normal;font-size:22px;font-weight:800}
+.mx{color:var(--ac)}.mo{color:#ef8a3c}
+.xst{text-align:center;font-size:18px;font-weight:800;margin:6px 0 12px;min-height:28px}
+.xb{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:360px;margin:0 auto 14px}
+.xc{aspect-ratio:1;border:1.5px solid var(--bd);border-radius:22px;background:var(--surf);font:inherit;font-size:clamp(40px,14vw,64px);font-weight:800;line-height:1;display:grid;place-content:center;padding:0;color:var(--ink);transition:transform .12s}
+.xc:active{transform:scale(.96)}.xc.win{background:var(--acs);border-color:var(--ac)}.xc.pop{animation:pop .25s ease-out}
+@keyframes pop{from{transform:scale(.5);opacity:.3}}
 .chart{direction:ltr;margin:6px 0}
 .gl{stroke:rgba(122,112,146,.3);stroke-width:1}.ax{fill:var(--mut);font-size:9px}
 .ln1,.ln2{fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}.ln1{stroke:var(--ac)}.ln2{stroke:#ef8a3c}
@@ -91,7 +102,7 @@ var PD=null,PDT=null,SD=null,LASTT='08:00',KC=0,ICE_EDIT=-1,S=null,view='home',m
 var F={type:'d',t:'08:00',n:'',date:'',days:[0,1,2,3,4,5,6],pre:true,rep:true};
 function blank(){var o={};for(var i=0;i<7;i++)o[i]={on:false,t:''};return o}
 function fix(){
- S.rem=S.rem||[];S.log=S.log||{};S.vitals=S.vitals||[];S.homework=S.homework||[];
+ S.rem=S.rem||[];S.xo=S.xo||{};['ai','p2'].forEach(function(m){S.xo[m]=S.xo[m]||{x:0,o:0,d:0}});S.log=S.log||{};S.vitals=S.vitals||[];S.homework=S.homework||[];
  S.vault=S.vault||{pin:'',info:''};S.ices=S.ices||[];if(!S.iceMig){if(S.ice&&S.ice.name)S.ices.push({id:Date.now(),name:S.ice.name,blood:S.ice.blood||'',allergies:S.ice.allergies||'',notes:S.ice.notes||''});S.iceMig=1}delete S.ice;
  S.eve=S.eve||{on:false,t:'20:00'};S.seq=S.seq||0;
  if(!Array.isArray(S.sos))S.sos=(S.sos&&S.sos.phone)?[{name:S.sos.name||'طوارئ',phone:S.sos.phone}]:[];
@@ -123,6 +134,44 @@ function delKidAt(i){
  var kd=S.kids[i];if(!kd)return;
  if(PD!==kd.id){PD=kd.id;clearTimeout(PDT);PDT=setTimeout(function(){PD=null;render()},6000);render();return}
  PD=null;clearTimeout(PDT);S.kids.splice(i,1);KC=0;SD=null;if(view==='ked')view='sch';save();render();schedEve()}
+var XG={b:['','','','','','','','',''],t:'X',over:false,w:null,mode:'ai',lvl:'hard',st:'X',last:-1,tm:null};
+var XL=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+function xWin(b){for(var i=0;i<8;i++){var l=XL[i];if(b[l[0]]&&b[l[0]]===b[l[1]]&&b[l[0]]===b[l[2]])return{p:b[l[0]],l:l}}return null}
+function xFull(b){return b.every(function(c){return c})}
+function xMini(b,pl,me){
+ var w=xWin(b);if(w)return w.p===me?1:-1;if(xFull(b))return 0;
+ var best=pl===me?-2:2;
+ for(var i=0;i<9;i++)if(!b[i]){b[i]=pl;var v=xMini(b,pl==='X'?'O':'X',me);b[i]='';if(pl===me){if(v>best)best=v}else if(v<best)best=v}
+ return best}
+function xAi(){
+ var b=XG.b,free=[],i;for(i=0;i<9;i++)if(!b[i])free.push(i);
+ if(free.length===9)return[0,2,4,6,8][Math.floor(Math.random()*5)];
+ if(XG.lvl==='easy'&&Math.random()<0.6)return free[Math.floor(Math.random()*free.length)];
+ var best=-2,mv=[];
+ for(i=0;i<free.length;i++){var c=free[i];b[c]='O';var v=xMini(b,'X','O');b[c]='';if(v>best){best=v;mv=[c]}else if(v===best)mv.push(c)}
+ return mv[Math.floor(Math.random()*mv.length)]}
+function xKick(){
+ clearTimeout(XG.tm);
+ if(XG.mode==='ai'&&!XG.over&&XG.t==='O')XG.tm=setTimeout(function(){if(view!=='xo'||XG.over||XG.t!=='O')return;xPlay(xAi())},450)}
+function xPlay(i){
+ if(XG.over||XG.b[i])return;
+ XG.b[i]=XG.t;XG.last=i;
+ var w=xWin(XG.b),sc=S.xo[XG.mode];
+ if(w){XG.over=true;XG.w=w;sc[XG.t.toLowerCase()]++;save();try{navigator.vibrate&&navigator.vibrate([80,60,80])}catch(e){}}
+ else if(xFull(XG.b)){XG.over=true;sc.d++;save()}
+ else XG.t=XG.t==='X'?'O':'X';
+ render();xKick()}
+function xNew(flip){
+ clearTimeout(XG.tm);if(flip)XG.st=XG.st==='X'?'O':'X';
+ XG.b=['','','','','','','','',''];XG.t=XG.st;XG.over=false;XG.w=null;XG.last=-1;render();xKick()}
+function xoView(){
+ var g=XG,sc=S.xo[g.mode],ai=g.mode==='ai',mk=function(c){return'<b class="m'+c.toLowerCase()+'">'+c+'</b>'};
+ var h='<div class="card c-lil"><div class="big s17">🎮 لعبة XO</div><div class="chips">'+chip('data-xm="p2"','العب مع صديق',!ai)+chip('data-xm="ai"','ضد الهاتف',ai)+'</div>';
+ if(ai)h+='<div class="chips">'+chip('data-xl="easy"','سهل',g.lvl==='easy')+chip('data-xl="hard"','صعب',g.lvl==='hard')+'</div>';
+ h+='</div><div class="xs"><div class="xsc'+(!g.over&&g.t==='X'?' on':'')+'">'+mk('X')+'<small>'+(ai?'أنت':'اللاعب 1')+'</small><i>'+sc.x+'</i></div><div class="xsc"><b>=</b><small>تعادلات</small><i>'+sc.d+'</i></div><div class="xsc'+(!g.over&&g.t==='O'?' on':'')+'">'+mk('O')+'<small>'+(ai?'الهاتف':'اللاعب 2')+'</small><i>'+sc.o+'</i></div></div>';
+ h+='<div class="xst">'+(g.over?(g.w?'الفائز: '+mk(g.w.p)+' 🎉':'تعادل!'):'الدور على '+mk(g.t))+'</div><div class="xb" dir="ltr">';
+ for(var i=0;i<9;i++){var c=g.b[i],win=g.w&&g.w.l.indexOf(i)>=0;h+='<button class="xc'+(c?' m'+c.toLowerCase():'')+(win?' win':'')+(i===g.last?' pop':'')+'" data-xc="'+i+'" aria-label="'+(c||'')+'">'+c+'</button>'}
+ return h+'</div><div class="row" style="border:0"><button class="btn p" data-xn="1">جولة جديدة</button><button class="btn" data-xr="1">تصفير النتائج</button></div>'}
 function kidForm(){return'<div class="row"><input type="text" id="kid_name" placeholder="اسم الابن (مثلاً: سارة)"></div><p class="hint">اختر نوع الأسبوع الحالي عنده، وسيتناوب التطبيق تلقائيًا بعده: أ ← ب ← أ …</p><div class="tabs"><button data-set="A">'+N.A+'</button><button data-set="B">'+N.B+'</button></div>'}
 function due(r,d){
  if(r.date)return dk(d)===r.date;
@@ -137,6 +186,21 @@ function tt(r){return r.w?'⏰ '+r.w:tr('⏰ تذكير')}
 
 /* ---------- i18n ---------- */
 var TR=[
+["لعبة XO","Jeu XO","XO game"],
+["العب مع صديق","Jouer à deux","Two players"],
+["ضد الهاتف","Contre le téléphone","Vs phone"],
+["سهل","Facile","Easy"],
+["صعب","Difficile","Hard"],
+["اللاعب 1","Joueur 1","Player 1"],
+["اللاعب 2","Joueur 2","Player 2"],
+["أنت","Vous","You"],
+["الهاتف","Téléphone","Phone"],
+["تعادلات","Nuls","Draws"],
+["الفائز:","Gagnant :","Winner:"],
+["تعادل!","Égalité !","Draw!"],
+["الدور على","C’est au tour de","Turn:"],
+["جولة جديدة","Nouvelle manche","New round"],
+["تصفير النتائج","Réinitialiser les scores","Reset scores"],
 ["اضغط «تأكيد الحذف» لحذف الجدول نهائيًا","Appuyez sur « Confirmer la suppression » pour supprimer ce planning définitivement","Tap “Confirm delete” to permanently delete this schedule"],
 ["تأكيد الحذف","Confirmer la suppression","Confirm delete"],
 ["جداول الأبناء","Plannings des enfants","Children’s schedules"],
@@ -434,7 +498,7 @@ function homeView(now,t){
   h+='<div class="row'+(i===0?' today':'')+'"><span class="dot'+(any?'':' o')+'"></span><span class="day">'+D[d2.getDay()]+'</span><span class="sub">'+d2.getDate()+'/'+(d2.getMonth()+1)+' · '+sts.map(function(z){return(S.kids.length>1?esc(z.k.name)+' ':'')+(z.x.on?'يدرس'+(ltxt(z.x)?' — '+esc(ltxt(z.x)):''):'عطلة')}).join(' | ')+'</span></div>'}
  return h+'</div>'}
 function moreView(){
- var h='<div class="tiles"><button class="tile c-peach" data-v="vitals"><span>📊</span>القياسات</button><button class="tile c-sky" data-v="vault"><span>🔒</span>الصندوق</button><button class="tile c-coral" data-v="em"><span>🚨</span>الطوارئ</button><button class="tile c-lil" data-v="set"><span>⚙️</span>الإعدادات</button></div>';
+ var h='<div class="tiles"><button class="tile c-peach" data-v="vitals"><span>📊</span>القياسات</button><button class="tile c-sky" data-v="vault"><span>🔒</span>الصندوق</button><button class="tile c-coral" data-v="em"><span>🚨</span>الطوارئ</button><button class="tile c-lil" data-v="set"><span>⚙️</span>الإعدادات</button><button class="tile c-butter" data-v="xo"><span>🎮</span>لعبة XO</button></div>';
  h+='<div class="card mt"><div class="big s17">🎨 المظهر</div><div class="sw">';
  [['lilac','#6c4cf1'],['rose','#d6336c'],['mint','#0f7f61'],['sea','#2f6df0']].forEach(function(x){h+='<button data-theme="'+x[0]+'" style="background:'+x[1]+'" class="'+((S.theme||'lilac')===x[0]?'sel':'')+'" aria-label="'+x[0]+'"></button>'});
  return h+'</div></div>'}
@@ -569,11 +633,11 @@ function render(){
  if(!S.kids.length){
   el.innerHTML=tr('<h1>Remind me</h1>'+langBar()+'<div class="card c-lil"><div class="big">أضف ابنك الأول</div>'+kidForm()+'</div>');
   return}
- var now=new Date(),t=S.kids.length===1?wt(now,S.kids[0]):'',sub=['vitals','vault','em','set'].indexOf(view)>=0;
+ var now=new Date(),t=S.kids.length===1?wt(now,S.kids[0]):'',sub=['vitals','vault','em','set','xo'].indexOf(view)>=0;
  var h='<div class="top"><div><div class="hi">'+(now.getHours()<12?'صباح الخير':'مساء الخير')+'</div><div class="nm">Remind me</div></div>'+(t?'<span class="wkb">'+N[t]+'</span>':'')+'</div>';
  if(view==='ked')h+='<button class="btn" data-v="sch" style="width:100%;margin-bottom:12px">'+(L==='ar'?'→':'←')+' الجدول</button>';
  if(sub)h+='<button class="btn" data-v="more" style="width:100%;margin-bottom:12px">'+(L==='ar'?'→':'←')+' المزيد</button>';
- h+=view==='home'?homeView(now,t):view==='sch'?schView():view==='ked'?kedView():view==='rem'?remView():view==='hw'?hwView():view==='more'?moreView():view==='vitals'?vitalsView():view==='vault'?vaultView():view==='em'?emView():setView();
+ h+=view==='home'?homeView(now,t):view==='sch'?schView():view==='ked'?kedView():view==='rem'?remView():view==='hw'?hwView():view==='more'?moreView():view==='vitals'?vitalsView():view==='vault'?vaultView():view==='em'?emView():view==='xo'?xoView():setView();
  h+='<nav class="nav">';
  [['home','🏠','الرئيسية'],['sch','📅','الجدول'],['rem','⏰','التذكيرات'],['hw','📚','الواجبات'],['more','✨','المزيد']].forEach(function(x){h+='<button data-v="'+x[0]+'" class="'+((view===x[0]||(x[0]==='more'&&sub)||(x[0]==='sch'&&view==='ked'))?'a':'')+'"><span>'+x[1]+'</span>'+x[2]+'</button>'});
  el.innerHTML=tr(h+'</nav>')}
@@ -607,7 +671,12 @@ document.addEventListener('click',function(ev){
    dd2.ls.sort(function(a,b){return(a.f||'99')<(b.f||'99')?-1:(a.f||'99')>(b.f||'99')?1:0});
    dd2.on=true;LASTT=tt2||ff||'08:00';save();render();schedEve()}
   else if(q.dl){var kl=q.dl.split(','),d3=S.kids[KC].weeks[kl[0]][+kl[1]];d3.ls.splice(+kl[2],1);save();render();schedEve()}
-  else if(q.v){view=q.v;PD=null;render()}
+  else if(q.v){view=q.v;PD=null;render();if(q.v==='xo')xKick()}
+  else if(q.xc!==undefined){if(XG.mode==='ai'&&XG.t!=='X')return;xPlay(+q.xc)}
+  else if(q.xm){XG.mode=q.xm;XG.st='X';xNew(false)}
+  else if(q.xl){XG.lvl=q.xl;XG.st='X';xNew(false)}
+  else if(q.xn)xNew(true)
+  else if(q.xr){S.xo[XG.mode]={x:0,o:0,d:0};save();render()}
   else if(q.add){
    if(F.type==='o'&&!F.date){alert('اختر تاريخ الموعد');return}
    if(F.type!=='o'&&!F.days.length){alert('اختر يومًا واحدًا على الأقل');return}
