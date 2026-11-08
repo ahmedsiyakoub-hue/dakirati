@@ -32,7 +32,7 @@ h1{font-size:28px;font-weight:800;margin:6px 2px 12px}
 .on{color:var(--ac)}.offt{color:var(--mut)}.wr{color:var(--wr);font-weight:700}
 .hero{background:var(--hero);color:#fff;border-radius:32px;padding:20px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:12px}
 .hd{font-size:34px;font-weight:800;line-height:1.1}.hs{opacity:.75;font-size:15px;margin:4px 0 12px}
-.hp{background:rgba(255,255,255,.16);border-radius:999px;padding:7px 14px;font-weight:700;font-size:14px;display:inline-block}
+.hp{margin-inline-end:6px;margin-bottom:6px;background:rgba(255,255,255,.16);border-radius:999px;padding:7px 14px;font-weight:700;font-size:14px;display:inline-block}
 .ring{--p:0;width:98px;height:98px;border-radius:50%;background:conic-gradient(var(--ring) calc(var(--p)*1%),rgba(255,255,255,.2) 0);display:grid;place-content:center;text-align:center;flex:none;position:relative;animation:fill 1s ease-out}
 .ring::before{content:'';position:absolute;inset:9px;border-radius:50%;background:var(--hero)}
 .ring b,.ring small{position:relative}.ring b{font-size:22px}.ring small{font-size:10px;opacity:.85;max-width:64px;line-height:1.15}
@@ -68,6 +68,9 @@ input[type=checkbox]:checked{background:var(--ac)}input[type=checkbox]:checked::
 .nav{position:fixed;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);max-width:496px;margin:0 auto;background:var(--surf);border:1.5px solid var(--bd);border-radius:28px;display:flex;padding:6px;gap:4px;z-index:10;box-shadow:0 10px 30px rgba(42,33,64,.2)}
 .nav button{flex:1;border:0;background:transparent;color:var(--mut);border-radius:22px;padding:8px 2px;font:inherit;font-size:11px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:2px;transition:transform .12s}
 .nav button span{font-size:21px;line-height:1}.nav button.a{background:var(--acs);color:var(--ac)}
+.kidc{background:var(--surf);border-radius:18px;padding:6px 14px;margin-top:10px}
+.lbox{background:var(--paper);border-radius:16px;padding:6px 12px;margin:2px 0 10px}
+.toast{position:fixed;left:16px;right:16px;top:calc(env(safe-area-inset-top,0px) + 12px);background:var(--ink);color:var(--paper);padding:12px 16px;border-radius:16px;font-weight:700;z-index:30;text-align:center}
 .chart{direction:ltr;margin:6px 0}
 .gl{stroke:rgba(122,112,146,.3);stroke-width:1}.ax{fill:var(--mut);font-size:9px}
 .ln1,.ln2{fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}.ln1{stroke:var(--ac)}.ln2{stroke:#ef8a3c}
@@ -78,26 +81,29 @@ input[type=checkbox]:checked{background:var(--ac)}input[type=checkbox]:checked::
 </style>
 </head>
 <body>
+<div class="toast" id="toast" style="display:none" role="status"></div>
 <div class="w" id="app"></div>
 <script>
 var DD={ar:['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'],fr:['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'],en:['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']};
 var NN={ar:{A:'الأسبوع «أ»',B:'الأسبوع «ب»'},fr:{A:'Semaine « A »',B:'Semaine « B »'},en:{A:'Week “A”',B:'Week “B”'}};
 var D=DD.ar,N=NN.ar,L='ar';
-var ICE_EDIT=-1,S=null,view='home',msg='',ready=null,vaultUnlocked=false,exactDenied=false;
+var PD=null,PDT=null,SD=null,LASTT='08:00',KC=0,ICE_EDIT=-1,S=null,view='home',msg='',ready=null,vaultUnlocked=false,exactDenied=false;
 var F={type:'d',t:'08:00',n:'',date:'',days:[0,1,2,3,4,5,6],pre:true,rep:true};
 function blank(){var o={};for(var i=0;i<7;i++)o[i]={on:false,t:''};return o}
 function fix(){
- S.weeks=S.weeks||{A:blank(),B:blank()};S.rem=S.rem||[];S.log=S.log||{};S.vitals=S.vitals||[];S.homework=S.homework||[];
+ S.rem=S.rem||[];S.log=S.log||{};S.vitals=S.vitals||[];S.homework=S.homework||[];
  S.vault=S.vault||{pin:'',info:''};S.ices=S.ices||[];if(!S.iceMig){if(S.ice&&S.ice.name)S.ices.push({id:Date.now(),name:S.ice.name,blood:S.ice.blood||'',allergies:S.ice.allergies||'',notes:S.ice.notes||''});S.iceMig=1}delete S.ice;
  S.eve=S.eve||{on:false,t:'20:00'};S.seq=S.seq||0;
  if(!Array.isArray(S.sos))S.sos=(S.sos&&S.sos.phone)?[{name:S.sos.name||'طوارئ',phone:S.sos.phone}]:[];
- if(S.ref===undefined)S.ref=null}
+ if(!Array.isArray(S.kids)){S.kids=[];if(S.ref!=null)S.kids.push({id:1,name:'ابني',ref:S.ref,weeks:S.weeks||{}})}
+ delete S.weeks;delete S.ref;
+ S.kids.forEach(function(k){k.weeks=k.weeks||{};['A','B'].forEach(function(w){k.weeks[w]=k.weeks[w]||{};for(var i=0;i<7;i++){var d=k.weeks[w][i]=k.weeks[w][i]||{on:false};d.ls=d.ls||[];if(d.t){d.ls.push({s:d.t,f:'',to:''});d.t=''}}})})}
 try{S=JSON.parse(localStorage.getItem('edt'))}catch(e){}
 if(!S||typeof S!=='object')S={};fix();
 L=DD[S.lang]?S.lang:'ar';D=DD[L];N=NN[L];
 function save(){try{localStorage.setItem('edt',JSON.stringify(S))}catch(e){}}
 function sun(d){var x=new Date(d.getFullYear(),d.getMonth(),d.getDate());x.setDate(x.getDate()-x.getDay());return x}
-function wt(d){var w=Math.round((sun(d)-new Date(S.ref))/604800000);return(((w%2)+2)%2===0)?'A':'B'}
+function wt(d,k){k=k||S.kids[0];var w=Math.round((sun(d)-new Date(k.ref))/604800000);return(((w%2)+2)%2===0)?'A':'B'}
 function escp(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
 function U(x){return '\u0001'+x+'\u0002'}
 function esc(s){return U(escp(s))}
@@ -105,7 +111,19 @@ function pad(n){return(n<10?'0':'')+n}
 function dk(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
 function dnS(s){var p=s.split('-');return Math.floor(Date.UTC(+p[0],p[1]-1,+p[2])/864e5)}
 function dn(d){return dnS(dk(d))}
-function setThis(type){var s=sun(new Date());if(type==='B')s.setDate(s.getDate()-7);S.ref=s.getTime();save();view='home';render();schedEve()}
+function addKid(name,type){
+ var s=sun(new Date());if(type==='B')s.setDate(s.getDate()-7);
+ var first=!S.kids.length;
+ S.kids.push({id:Date.now(),name:(name||'').trim()||tr('ابني'),ref:s.getTime(),weeks:{A:blank(),B:blank()}});
+ KC=S.kids.length-1;fix();save();view='ked';SD=null;render();schedEve()}
+function ltxt(x){return x.ls.map(function(l){return l.s}).join(', ')}
+function addMin(t,m){var a=t.split(':'),v=Math.min(1439,(+a[0])*60+(+a[1])+m);return pad(Math.floor(v/60))+':'+pad(v%60)}
+function trg(l){return l.f?'<span dir="ltr">'+l.f+'–'+(l.to||'')+'</span>':''}
+function delKidAt(i){
+ var kd=S.kids[i];if(!kd)return;
+ if(PD!==kd.id){PD=kd.id;clearTimeout(PDT);PDT=setTimeout(function(){PD=null;render()},6000);render();return}
+ PD=null;clearTimeout(PDT);S.kids.splice(i,1);KC=0;SD=null;if(view==='ked')view='sch';save();render();schedEve()}
+function kidForm(){return'<div class="row"><input type="text" id="kid_name" placeholder="اسم الابن (مثلاً: سارة)"></div><p class="hint">اختر نوع الأسبوع الحالي عنده، وسيتناوب التطبيق تلقائيًا بعده: أ ← ب ← أ …</p><div class="tabs"><button data-set="A">'+N.A+'</button><button data-set="B">'+N.B+'</button></div>'}
 function due(r,d){
  if(r.date)return dk(d)===r.date;
  if(r.c&&dk(d)<r.c)return false;
@@ -119,6 +137,26 @@ function tt(r){return r.w?'⏰ '+r.w:tr('⏰ تذكير')}
 
 /* ---------- i18n ---------- */
 var TR=[
+["اضغط «تأكيد الحذف» لحذف الجدول نهائيًا","Appuyez sur « Confirmer la suppression » pour supprimer ce planning définitivement","Tap “Confirm delete” to permanently delete this schedule"],
+["تأكيد الحذف","Confirmer la suppression","Confirm delete"],
+["جداول الأبناء","Plannings des enfants","Children’s schedules"],
+["لا توجد جداول بعد.","Aucun planning pour l’instant.","No schedules yet."],
+["+ إضافة جدول","+ Ajouter un planning","+ Add schedule"],
+["لم تُحدَّد أيام الدراسة بعد","Jours d’école non définis","School days not set yet"],
+["المواد والتوقيت","Matières et horaires","Subjects & times"],
+["+ إضافة مادة","+ Ajouter une matière","+ Add subject"],
+["تعديل جدول","Modifier le planning","Edit schedule"],
+["أدخل المادة الدراسية","Saisissez la matière","Enter the subject"],
+["اسم الابن (مثلاً: سارة)","Prénom de l’enfant (ex. Sara)","Child’s name (e.g. Sara)"],
+["اختر نوع الأسبوع الحالي عنده، وسيتناوب التطبيق تلقائيًا بعده: أ ← ب ← أ …","Choisissez la semaine en cours pour lui/elle ; l’application alternera ensuite automatiquement : A → B → A …","Pick the current week for them; the app will then alternate automatically: A → B → A …"],
+["الأسبوع الحالي لهذا الابن:","Semaine en cours pour cet enfant :","Current week for this child:"],
+["إضافة ابن آخر","Ajouter un autre enfant","Add another child"],
+["حذف هذا الابن","Supprimer cet enfant","Delete this child"],
+["هل تريد حذف هذا الابن وجدوله؟","Supprimer cet enfant et son planning ?","Delete this child and their schedule?"],
+["أضف ابنك الأول","Ajoutez votre premier enfant","Add your first child"],
+["أخبرني كل مساء من يدرس غدًا","Dites-moi chaque soir qui a cours demain","Tell me each evening who has school tomorrow"],
+["ابني","Mon enfant","My child"],
+["الطوارئ","Urgences","Emergency"],
 ["📈 المنحنى البياني","📈 Courbe d’évolution","📈 Trend chart"],
 ["لا توجد قياسات كافية للمنحنى (يلزم قياسان على الأقل).","Pas assez de mesures pour la courbe (au moins 2).","Not enough readings for the chart (at least 2)."],
 ["المنحنى للمعلومات فقط وليس تشخيصًا طبيًا. استشر طبيبك.","La courbe est informative et ne remplace pas un avis médical.","The chart is informational and not a medical diagnosis. Consult your doctor."],
@@ -289,7 +327,7 @@ function tr(s){
  out=trSeg(p[0],i);
  for(var j=1;j<p.length;j++){var q=p[j].split('\u0002');out+=q[0]+(q.length>1?trSeg(q.slice(1).join(''),i):'')}
  return out}
-var _al=window.alert;window.alert=function(m){_al.call(window,tr(m))};
+var TT=null;window.alert=function(m){var el=document.getElementById('toast');if(!el)return;el.textContent=tr(m);el.style.display='block';clearTimeout(TT);TT=setTimeout(function(){el.style.display='none'},2800)};
 function applyDir(){try{var e=document.documentElement;e.dir=L==='ar'?'rtl':'ltr';e.lang=L;e.dataset.theme=S.theme||'lilac';document.title='Remind me'}catch(x){}}
 function setLang(l){if(!DD[l])return;L=l;S.lang=l;D=DD[l];N=NN[l];save();applyDir();ready=null;render();init()}
 function langBar(){return'<div class="chips">'+['ar:العربية','fr:Français','en:English'].map(function(x){var a=x.split(':');return'<button data-lang="'+a[0]+'"'+(L===a[0]?' class="a"':'')+'>'+a[1]+'</button>'}).join('')+'</div>'}
@@ -330,7 +368,7 @@ async function schedRem(r){
   var pe=await LN.getPending();say('تمت جدولة «'+U(r.n)+'» (إجمالي الإشعارات المجدولة: '+pe.notifications.length+')')
  }catch(e){say('خطأ: '+String(e&&e.message||e))}}
 async function schedEve(){
- if(!LN||S.ref===null)return;
+ if(!LN||!S.kids.length)return;
  if(!await ensure())return;
  try{
   var ids=[],i;for(i=0;i<14;i++)ids.push({id:1900000000+i});await LN.cancel({notifications:ids});
@@ -338,8 +376,8 @@ async function schedEve(){
   var a=S.eve.t.split(':'),now=new Date(),L=[];
   for(i=0;i<14;i++){
    var d=new Date(now.getFullYear(),now.getMonth(),now.getDate()+i,+a[0],+a[1],0);if(d<=now)continue;
-   var g=new Date(d.getFullYear(),d.getMonth(),d.getDate()+1),x=S.weeks[wt(g)][g.getDay()];
-   L.push({id:1900000000+dn(d)%14,title:tr('📚 المدرسة'),body:tr('غدًا')+' ('+D[g.getDay()]+') '+(x.on?tr('يدرس')+(x.t?' — '+x.t:''):tr('عطلة')),channelId:'meds',schedule:{at:d,allowWhileIdle:true}})}
+   var g=new Date(d.getFullYear(),d.getMonth(),d.getDate()+1),x=null;
+   L.push({id:1900000000+dn(d)%14,title:tr('📚 المدرسة'),body:tr('غدًا')+' ('+D[g.getDay()]+') '+S.kids.map(function(kd){var y=kd.weeks[wt(g,kd)][g.getDay()];return(S.kids.length>1?kd.name+': ':'')+(y.on?tr('يدرس')+(ltxt(y)?' — '+ltxt(y):''):tr('عطلة'))}).join(' | '),channelId:'meds',schedule:{at:d,allowWhileIdle:true}})}
   if(L.length)await LN.schedule({notifications:L})
  }catch(e){}}
 function markDone(r,day){S.log[day]=S.log[day]||{};if(S.log[day][r.id])return;S.log[day][r.id]=true;save();if(LN)schedRem(r)}
@@ -377,8 +415,9 @@ if(LN){try{LN.addListener('localNotificationActionPerformed',function(a){
 /* ---------- views ---------- */
 function chip(attr,label,on){return'<button '+attr+(on?' class="a"':'')+'>'+label+'</button>'}
 function homeView(now,t){
- var e=S.weeks[t][now.getDay()],k=dk(now),h='',RL=sortedRem(S.rem.filter(function(r){return due(r,now)})),dc=RL.filter(function(r){return isDone(r,k)}).length,pct=RL.length?Math.round(dc*100/RL.length):0;
- h+='<div class="hero"><div><div class="hd">'+D[now.getDay()]+'</div><div class="hs">'+now.getDate()+'/'+(now.getMonth()+1)+'</div><span class="hp">'+(e.on?'🎒 يدرس اليوم'+(e.t?' — '+esc(e.t):''):'🏖️ لا يدرس اليوم')+'</span></div><div class="ring" style="--p:'+pct+'"><b>'+(RL.length?dc+'/'+RL.length:'🎉')+'</b><small>اكتملت اليوم</small></div></div>';
+ var k=dk(now),h='',RL=sortedRem(S.rem.filter(function(r){return due(r,now)})),dc=RL.filter(function(r){return isDone(r,k)}).length,pct=RL.length?Math.round(dc*100/RL.length):0;
+ h+='<div class="hero"><div><div class="hd">'+D[now.getDay()]+'</div><div class="hs">'+now.getDate()+'/'+(now.getMonth()+1)+'</div>'+''+'</div><div class="ring" style="--p:'+pct+'"><b>'+(RL.length?dc+'/'+RL.length:'🎉')+'</b><small>اكتملت اليوم</small></div></div>';
+ h+=kidsList();
  if(exactDenied)h+='<div class="card c-butter"><div class="wr">⚠️ المنبهات الدقيقة غير مفعّلة، وقد تتأخر الإشعارات أو لا تصل.</div><button class="btn p mt" data-exact="1" style="width:100%">تفعيلها الآن</button></div>';
  S.sos.forEach(function(c){h+='<a href="tel:'+esc(c.phone)+'" style="text-decoration:none"><button class="sos-btn">🚨 اتصال: '+esc(c.name)+' ('+esc(c.phone)+')</button></a>'});
  h+='<div class="card c-mint"><div class="big s17">⏰ تذكيراتي اليوم</div>';
@@ -391,23 +430,45 @@ function homeView(now,t){
   if(c.notes)h+='<div><b>ملاحظات:</b> '+esc(c.notes)+'</div>';
   h+='</div>'});
  h+='<div class="card"><div class="big s17">الأيام السبعة القادمة</div>';
- for(var i=0;i<7;i++){var d2=new Date(now.getFullYear(),now.getMonth(),now.getDate()+i),x=S.weeks[wt(d2)][d2.getDay()];
-  h+='<div class="row'+(i===0?' today':'')+'"><span class="dot'+(x.on?'':' o')+'"></span><span class="day">'+D[d2.getDay()]+'</span><span class="sub">'+d2.getDate()+'/'+(d2.getMonth()+1)+' · '+(x.on?'يدرس'+(x.t?' — '+esc(x.t):''):'عطلة')+'</span></div>'}
+ for(var i=0;i<7;i++){var d2=new Date(now.getFullYear(),now.getMonth(),now.getDate()+i),sts=S.kids.map(function(kd){return{k:kd,x:kd.weeks[wt(d2,kd)][d2.getDay()]}}),any=sts.some(function(z){return z.x.on});
+  h+='<div class="row'+(i===0?' today':'')+'"><span class="dot'+(any?'':' o')+'"></span><span class="day">'+D[d2.getDay()]+'</span><span class="sub">'+d2.getDate()+'/'+(d2.getMonth()+1)+' · '+sts.map(function(z){return(S.kids.length>1?esc(z.k.name)+' ':'')+(z.x.on?'يدرس'+(ltxt(z.x)?' — '+esc(ltxt(z.x)):''):'عطلة')}).join(' | ')+'</span></div>'}
  return h+'</div>'}
 function moreView(){
- var h='<div class="tiles"><button class="tile c-peach" data-v="vitals"><span>📊</span>القياسات</button><button class="tile c-sky" data-v="vault"><span>🔒</span>الصندوق</button><button class="tile c-coral" data-v="set"><span>⚙️</span>الإعدادات</button></div>';
+ var h='<div class="tiles"><button class="tile c-peach" data-v="vitals"><span>📊</span>القياسات</button><button class="tile c-sky" data-v="vault"><span>🔒</span>الصندوق</button><button class="tile c-coral" data-v="em"><span>🚨</span>الطوارئ</button><button class="tile c-lil" data-v="set"><span>⚙️</span>الإعدادات</button></div>';
  h+='<div class="card mt"><div class="big s17">🎨 المظهر</div><div class="sw">';
  [['lilac','#6c4cf1'],['rose','#d6336c'],['mint','#0f7f61'],['sea','#2f6df0']].forEach(function(x){h+='<button data-theme="'+x[0]+'" style="background:'+x[1]+'" class="'+((S.theme||'lilac')===x[0]?'sel':'')+'" aria-label="'+x[0]+'"></button>'});
  return h+'</div></div>'}
-function schView(t){
- var h='';
+function kidsList(){
+ var now=new Date(),h='<div class="card c-lil"><div class="big s17">🎒 جداول الأبناء</div>';
+ if(!S.kids.length)h+='<p class="hint">لا توجد جداول بعد.</p>';
+ S.kids.forEach(function(kd,i){
+  var w=wt(now,kd),x=kd.weeks[w][now.getDay()],empty=['A','B'].every(function(k){for(var d=0;d<7;d++)if(kd.weeks[k][d].on)return false;return true});
+  h+='<div class="kidc"><div class="row"><span class="sub" style="color:inherit"><b>'+esc(kd.name)+'</b> <span class="badge">'+N[w]+'</span></span>'+(PD===kd.id?'<button class="btn" style="flex:none;padding:8px 14px" data-cdel="1">إلغاء</button><button class="btn danger" style="flex:none;padding:8px 14px" data-dkid="'+i+'">تأكيد الحذف</button>':'<button class="btn" style="flex:none;padding:8px 14px" data-ekid="'+i+'">تعديل</button><button class="btn danger" style="flex:none;padding:8px 14px" data-dkid="'+i+'">حذف</button>')+'</div>';
+  if(PD===kd.id)h+='<p class="hint wr">اضغط «تأكيد الحذف» لحذف الجدول نهائيًا</p>';
+  if(empty)h+='<p class="hint wr">لم تُحدَّد أيام الدراسة بعد</p>';
+  else if(!x.on)h+='<p class="hint">🏖️ لا يدرس اليوم</p>';
+  else{h+='<p class="hint on">🎒 يدرس اليوم</p>';x.ls.forEach(function(l){h+='<div class="row"><span class="day" style="width:104px">'+trg(l)+'</span><span class="sub" style="color:inherit">'+esc(l.s)+'</span></div>'})}
+  h+='</div>'});
+ return h+'<button class="btn p mt" data-v="sch" style="width:100%">+ إضافة جدول</button></div>'}
+function schView(){
+ var h=kidsList();
+ h+='<div class="card c-peach"><div class="big s17">➕ إضافة ابن آخر</div>'+kidForm()+'</div>';
+ return h+'<div class="card"><div class="big s17">📚 إشعار مسائي عن الغد</div><label class="row"><input type="checkbox" data-eve="on" '+(S.eve.on?'checked':'')+'><span>أخبرني كل مساء من يدرس غدًا</span></label><div class="row"><span>الوقت:</span><input type="time" data-eve="t" value="'+S.eve.t+'"></div></div>'}
+function lessonEditor(x,key){
+ var h='<div class="lbox">';
+ x.ls.forEach(function(l,i){h+='<div class="row"><span class="day" style="width:104px">'+trg(l)+'</span><span class="sub" style="color:inherit">'+esc(l.s)+'</span><button class="btn danger" style="flex:none;padding:6px 12px" data-dl="'+key+','+i+'">حذف</button></div>'});
+ return h+'<div class="row"><input type="text" id="ls_s" placeholder="المادة الدراسية"></div><div class="row"><input type="time" id="ls_f" value="'+LASTT+'"><span>–</span><input type="time" id="ls_t" value="'+addMin(LASTT,60)+'"></div><button class="btn p" data-al="'+key+'" style="width:100%">+ إضافة مادة</button></div>'}
+function kedView(){
+ if(KC>=S.kids.length){view='sch';return schView()}
+ var kd=S.kids[KC],t=wt(new Date(),kd),h='<div class="card c-lil"><div class="big s17">✏️ تعديل جدول</div><div class="row"><input type="text" data-kn="1" value="'+esc(kd.name)+'" placeholder="اسم الابن (مثلاً: سارة)"></div><p class="hint">الأسبوع الحالي لهذا الابن:</p><div class="chips">'+chip('data-kw="A"',N.A,t==='A')+chip('data-kw="B"',N.B,t==='B')+'</div></div>';
  ['A','B'].forEach(function(k){
   h+='<div class="card"><div class="big s17">'+N[k]+(k===t?' <span class="badge">الحالي</span>':'')+'</div><div class="hint">ضع علامة على الأيام التي يدرس فيها ابنك:</div>';
-  for(var i=0;i<7;i++){var x=S.weeks[k][i];
-   h+='<div class="row"><label style="display:flex;align-items:center;gap:8px;width:118px;flex:none;font-weight:600;padding:6px 0"><input type="checkbox" data-k="'+k+'" data-i="'+i+'" '+(x.on?'checked':'')+'>'+D[i]+'</label><input type="text" placeholder="المواد / ملاحظة" data-k="'+k+'" data-i="'+i+'" value="'+esc(x.t)+'"></div>'}
+  for(var i=0;i<7;i++){
+   var x=kd.weeks[k][i],key=k+','+i,sm=x.ls.length?'📚 '+x.ls.length+(x.ls[0].f?' · '+x.ls[0].f+'–'+(x.ls[x.ls.length-1].to||''):''):'';
+   h+='<div class="row"><label style="display:flex;align-items:center;gap:8px;width:112px;flex:none;font-weight:600;padding:6px 0"><input type="checkbox" data-k="'+k+'" data-i="'+i+'" '+(x.on?'checked':'')+'>'+D[i]+'</label><span class="sub" dir="ltr">'+sm+'</span><button class="btn" style="flex:none;padding:8px 12px" data-ed="'+key+'">'+(SD===key?'▲':'المواد والتوقيت')+'</button></div>';
+   if(SD===key)h+=lessonEditor(x,key)}
   h+='</div>'});
- h+='<div class="card"><div class="big s17">📚 إشعار مسائي عن الغد</div><label class="row"><input type="checkbox" data-eve="on" '+(S.eve.on?'checked':'')+'><span>أخبرني كل مساء هل يدرس ابني غدًا</span></label><div class="row"><span>الوقت:</span><input type="time" data-eve="t" value="'+S.eve.t+'"></div></div>';
- return h+'<button class="btn" data-reset="1" style="width:100%">تغيير نوع الأسبوع الحالي</button>'}
+ return h+'<button class="btn danger" data-delkid="1" style="width:100%">'+(PD===kd.id?'تأكيد الحذف':'حذف هذا الابن')+'</button>'}
 function remView(){
  var o=F.type==='o',h='<div class="card c-lil"><div class="big s17">➕ تذكير جديد</div><div class="row"><select data-f="type"><option value="d"'+(o?'':' selected')+'>متكرر</option><option value="o"'+(o?' selected':'')+'>موعد مرة واحدة</option></select>';
  if(o)h+='<input type="date" data-f="date" value="'+F.date+'">';
@@ -490,27 +551,31 @@ function vaultView(){
  if(!S.vault.pin)return h+'<p class="hint">أنشئ كودًا سريًا (4 أرقام على الأقل):</p><div class="row"><input type="password" id="new_pin" placeholder="الكود السري"></div><button class="btn p mt" data-setpin="1" style="width:100%">حفظ الكود</button></div>';
  if(!vaultUnlocked)return h+'<div class="row"><input type="password" id="enter_pin" placeholder="أدخل الكود لفتح الصندوق"></div><button class="btn p mt" data-unlock="1" style="width:100%">🔓 فتح</button></div>';
  return h+'<textarea id="vault_info" rows="5" placeholder="أرقام التأمين، ملاحظات خاصة...">'+esc(S.vault.info)+'</textarea><div class="row"><button class="btn p" data-savevault="1">حفظ</button><button class="btn" data-lock="1">🔒 إغلاق</button></div><p class="hint">الكود يخفي المعلومات داخل التطبيق فقط، ولا يشفّرها. لا تكتب فيها أسرارًا بالغة الخطورة.</p></div>'}
-function setView(){
- var h='<div class="card"><div class="big s17">🌐 Language / Langue / اللغة</div>'+langBar()+'</div><div class="card"><div class="big s17">🚨 أرقام الطوارئ</div>';
+function emView(){
+ var h='<div class="card c-coral"><div class="big s17">🚨 أرقام الطوارئ</div>';
  S.sos.forEach(function(c,i){h+='<div class="row"><span class="sub" style="color:inherit"><b>'+esc(c.name)+'</b><br>'+esc(c.phone)+'</span><button class="btn danger" style="flex:none" data-delsos="'+i+'">حذف</button></div>'});
  h+='<div class="row"><input type="text" id="sos_name" placeholder="الاسم (الابن، الطبيب، الإسعاف...)"></div><div class="row"><input type="text" id="sos_phone" placeholder="رقم الهاتف"></div><button class="btn p mt" data-addsos="1" style="width:100%">+ إضافة رقم طوارئ</button></div>';
  var ec=ICE_EDIT>=0&&S.ices[ICE_EDIT]?S.ices[ICE_EDIT]:{name:'',blood:'',allergies:'',notes:''},ed=ICE_EDIT>=0&&S.ices[ICE_EDIT];
  h+='<div class="card"><div class="big s17">🪪 بطاقة التعريف الطبية (ICE)</div>';
  S.ices.forEach(function(c,i){h+='<div class="row"><span class="sub" style="color:inherit"><b>'+esc(c.name)+'</b><br><small class="offt">'+esc(c.blood||'')+'</small></span><button class="btn" style="flex:none" data-editice="'+i+'">تعديل</button><button class="btn danger" style="flex:none" data-delice="'+i+'">حذف</button></div>'});
  h+='<div class="row"><input type="text" id="ice_name" placeholder="الاسم الكامل" value="'+esc(ec.name)+'"></div><div class="row"><input type="text" id="ice_blood" placeholder="فصيلة الدم" value="'+esc(ec.blood)+'"></div><div class="row"><input type="text" id="ice_allergies" placeholder="الحساسية" value="'+esc(ec.allergies)+'"></div><div class="row"><textarea id="ice_notes" rows="2" placeholder="ملاحظات صحية حرجة...">'+esc(ec.notes)+'</textarea></div><button class="btn p mt" data-saveice="1" style="width:100%">'+(ed?'حفظ البطاقة':'+ إضافة بطاقة')+'</button>'+(ed?'<button class="btn mt" data-cancelice="1" style="width:100%">إلغاء</button>':'')+'</div>';
+ return h}
+function setView(){
+ var h='<div class="card"><div class="big s17">🌐 Language / Langue / اللغة</div>'+langBar()+'</div>';
  h+='<div class="card"><div class="big s17">🔔 فحص الإشعارات</div><div class="row"><button class="btn" data-test="1">اختبار</button><button class="btn" data-diag="1">فحص</button><button class="btn" data-exact="1">المنبهات</button></div><p class="hint" id="ns">'+escp(msg)+'</p></div>';
  return h+'<div class="card"><div class="big s17">💾 نسخ احتياطي</div><textarea id="bk" rows="3" placeholder="هنا تظهر بياناتك للنسخ، أو الصق نسخة سابقة للاسترجاع"></textarea><div class="row"><button class="btn" data-exp="1">إظهار البيانات</button><button class="btn" data-imp="1">استرجاع</button></div><p class="hint" id="bm"></p></div>'}
 function render(){
  var el=document.getElementById('app');
- if(S.ref===null){
-  el.innerHTML=tr('<h1>Remind me</h1>'+langBar()+'<div class="card c-lil"><div class="big">أي أسبوع نحن فيه الآن؟</div><p class="hint">اختر نوع هذا الأسبوع، وسيتناوب التطبيق تلقائيًا بعده: أ ← ب ← أ …</p><div class="tabs"><button data-set="A">'+N.A+'</button><button data-set="B">'+N.B+'</button></div></div>');
+ if(!S.kids.length){
+  el.innerHTML=tr('<h1>Remind me</h1>'+langBar()+'<div class="card c-lil"><div class="big">أضف ابنك الأول</div>'+kidForm()+'</div>');
   return}
- var now=new Date(),t=wt(now),sub=['vitals','vault','set'].indexOf(view)>=0;
- var h='<div class="top"><div><div class="hi">'+(now.getHours()<12?'صباح الخير':'مساء الخير')+'</div><div class="nm">Remind me</div></div><span class="wkb">'+N[t]+'</span></div>';
+ var now=new Date(),t=S.kids.length===1?wt(now,S.kids[0]):'',sub=['vitals','vault','em','set'].indexOf(view)>=0;
+ var h='<div class="top"><div><div class="hi">'+(now.getHours()<12?'صباح الخير':'مساء الخير')+'</div><div class="nm">Remind me</div></div>'+(t?'<span class="wkb">'+N[t]+'</span>':'')+'</div>';
+ if(view==='ked')h+='<button class="btn" data-v="sch" style="width:100%;margin-bottom:12px">'+(L==='ar'?'→':'←')+' الجدول</button>';
  if(sub)h+='<button class="btn" data-v="more" style="width:100%;margin-bottom:12px">'+(L==='ar'?'→':'←')+' المزيد</button>';
- h+=view==='home'?homeView(now,t):view==='sch'?schView(t):view==='rem'?remView():view==='hw'?hwView():view==='more'?moreView():view==='vitals'?vitalsView():view==='vault'?vaultView():setView();
+ h+=view==='home'?homeView(now,t):view==='sch'?schView():view==='ked'?kedView():view==='rem'?remView():view==='hw'?hwView():view==='more'?moreView():view==='vitals'?vitalsView():view==='vault'?vaultView():view==='em'?emView():setView();
  h+='<nav class="nav">';
- [['home','🏠','الرئيسية'],['sch','📅','الجدول'],['rem','⏰','التذكيرات'],['hw','📚','الواجبات'],['more','✨','المزيد']].forEach(function(x){h+='<button data-v="'+x[0]+'" class="'+((view===x[0]||(x[0]==='more'&&sub))?'a':'')+'"><span>'+x[1]+'</span>'+x[2]+'</button>'});
+ [['home','🏠','الرئيسية'],['sch','📅','الجدول'],['rem','⏰','التذكيرات'],['hw','📚','الواجبات'],['more','✨','المزيد']].forEach(function(x){h+='<button data-v="'+x[0]+'" class="'+((view===x[0]||(x[0]==='more'&&sub)||(x[0]==='sch'&&view==='ked'))?'a':'')+'"><span>'+x[1]+'</span>'+x[2]+'</button>'});
  el.innerHTML=tr(h+'</nav>')}
 function val(id){var e=document.getElementById(id);return e?e.value:''}
 function delRem(id){
@@ -527,9 +592,22 @@ document.addEventListener('click',function(ev){
   else if(q.vd!==undefined){VF.days=+q.vd;render()}
   else if(q.vw!==undefined){VF.who=q.vw==='*'?'*':vPersons()[+q.vw];render()}
   else if(q.theme){S.theme=q.theme;save();applyDir();render()}
-  else if(q.set)setThis(q.set);
-  else if(q.v){view=q.v;render()}
-  else if(q.reset){S.ref=null;save();render()}
+  else if(q.set)addKid(val('kid_name'),q.set);
+  else if(q.kc!==undefined){KC=+q.kc;render()}
+  else if(q.kw){var kk=S.kids[KC],sw=sun(new Date());if(q.kw==='B')sw.setDate(sw.getDate()-7);kk.ref=sw.getTime();save();render();schedEve()}
+  else if(q.delkid)delKidAt(KC);
+  else if(q.cdel){PD=null;render()}
+  else if(q.dkid!==undefined)delKidAt(+q.dkid);
+  else if(q.ekid!==undefined){KC=+q.ekid;SD=null;view='ked';render()}
+  else if(q.ed){SD=(SD===q.ed)?null:q.ed;LASTT='08:00';render()}
+  else if(q.al){
+   var ka=q.al.split(','),dd2=S.kids[KC].weeks[ka[0]][+ka[1]],sn=val('ls_s').trim();
+   if(!sn){alert('أدخل المادة الدراسية');return}
+   var ff=val('ls_f'),tt2=val('ls_t');dd2.ls.push({s:sn,f:ff,to:tt2});
+   dd2.ls.sort(function(a,b){return(a.f||'99')<(b.f||'99')?-1:(a.f||'99')>(b.f||'99')?1:0});
+   dd2.on=true;LASTT=tt2||ff||'08:00';save();render();schedEve()}
+  else if(q.dl){var kl=q.dl.split(','),d3=S.kids[KC].weeks[kl[0]][+kl[1]];d3.ls.splice(+kl[2],1);save();render();schedEve()}
+  else if(q.v){view=q.v;PD=null;render()}
   else if(q.add){
    if(F.type==='o'&&!F.date){alert('اختر تاريخ الموعد');return}
    if(F.type!=='o'&&!F.days.length){alert('اختر يومًا واحدًا على الأقل');return}
@@ -573,7 +651,8 @@ document.addEventListener('click',function(ev){
 function onField(ev){
  var c=ev.target,q=c.dataset;if(!q)return;
  if(q.f){F[q.f]=c.type==='checkbox'?c.checked:c.value;if(q.f==='type')render()}
- else if(q.k!==undefined){if(c.type==='checkbox'){S.weeks[q.k][q.i].on=c.checked;save();schedEve()}else{S.weeks[q.k][q.i].t=c.value;save()}}
+ else if(q.kn){S.kids[KC].name=c.value;save();if(ev.type==='change')render()}
+ else if(q.k!==undefined){var wk=S.kids[KC].weeks;if(c.type==='checkbox'){wk[q.k][q.i].on=c.checked;save();schedEve()}else{wk[q.k][q.i].t=c.value;save()}}
  else if(q.eve==='on'){S.eve.on=c.checked;save();schedEve()}
  else if(q.eve==='t'){S.eve.t=c.value||'20:00';save();schedEve()}
  else if(q.done!==undefined&&c.type==='checkbox'){var r=findRem(q.done);if(r){if(c.checked)markDone(r,dk(new Date()));else unmark(r,dk(new Date()));render()}}}
