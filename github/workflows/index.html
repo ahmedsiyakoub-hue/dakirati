@@ -1017,7 +1017,9 @@ document.addEventListener('click',function(ev){
    S.homework.push({title:title,subject:sj,dueDate:dd,t:tm,rid:r2.id});S.rem.push(r2);save();render();schedRem(r2)}
   else if(q.delhw!==undefined){var hw=S.homework[+q.delhw];if(hw)delRem(hw.rid);else S.homework.splice(+q.delhw,1);save();render()}
   else if(q.setpin){var pin=val('new_pin');if(pin.length>=4){S.vault.pin=pin;vaultUnlocked=true;save();render()}else alert('4 أرقام على الأقل')}
-  else if(q.unlock){if(val('enter_pin')===S.vault.pin){vault_info');save();alert('تم الحفظ')}
+  else if(q.unlock){if(val('enter_pin')===S.vault.pin){vaultUnlocked=true;render()}else alert('كود سري خاطئ!')}
+  else if(q.lock){vaultUnlocked=false;render()}
+  else if(q.savevault){S.vault.info=val('vault_info');save();alert('تم الحفظ')}
   else if(q.addsos){var nm=val('sos_name').trim(),ph=val('sos_phone').trim();if(!ph){alert('أدخل رقم الهاتف');return}S.sos.push({name:nm||tr('طوارئ'),phone:ph});save();render()}
   else if(q.delsos!==undefined){S.sos.splice(+q.delsos,1);save();render()}
   else if(q.saveice){
