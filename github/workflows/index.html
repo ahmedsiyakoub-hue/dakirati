@@ -98,6 +98,19 @@ input[type=checkbox]:checked{background:var(--ac)}input[type=checkbox]:checked::
 .c4c{display:block;aspect-ratio:1;border-radius:50%;background:var(--paper)}.c4c.px{background:var(--ac)}.c4c.po{background:#ef8a3c}
 .c4c.win{box-shadow:0 0 0 3px var(--ink)}.c4c.pop{animation:drop .35s ease-in}
 @keyframes drop{from{transform:translateY(-250%);opacity:.3}}
+.al{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}.al button{aspect-ratio:1;border:0;border-radius:12px;background:var(--surf);color:var(--ac);font:inherit;font-size:18px;font-weight:800}.al button.a{background:var(--ac);color:var(--onac)}
+.big-l{font-size:64px;font-weight:800;line-height:1.1;direction:ltr;text-align:center;color:var(--ac)}
+.bq{font-size:60px;line-height:1.2;text-align:center;margin:6px 0}.gq{font-size:22px;font-weight:800;text-align:center;margin:10px 0 14px}
+.ltr{direction:ltr;unicode-bidi:isolate;display:inline-block}
+.spk{border:0;background:var(--acs);border-radius:999px;width:40px;height:40px;font-size:18px;flex:none;margin-inline-start:6px;vertical-align:middle}
+.wc{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.wcd{border:1.5px solid var(--bd);border-radius:20px;background:var(--surf);padding:12px 8px;text-align:center;font:inherit;color:var(--ink)}.wcd:active{transform:scale(.96)}
+.wcd .e{font-size:40px;line-height:1.2;display:block}.wcd b{display:block;font-size:19px}.wcd small{color:var(--mut);display:block}
+.sbox{min-height:56px;border:2px dashed var(--bd);border-radius:16px;padding:8px;margin:10px 0;display:flex;flex-wrap:wrap;gap:6px;direction:ltr}
+.wch{border:0;border-radius:12px;background:var(--acs);color:var(--ac);padding:8px 12px;font:inherit;font-size:16px;font-weight:700}
+
+.qo{display:block;width:100%;text-align:start;border:0;border-radius:16px;padding:14px;margin-bottom:8px;background:var(--acs);color:var(--ink);font:inherit;font-weight:700}
+.qo.ok{background:var(--mint)}.qo.bad{background:var(--coral)}
 .chart{direction:ltr;margin:6px 0}
 .gl{stroke:rgba(122,112,146,.3);stroke-width:1}.ax{fill:var(--mut);font-size:9px}
 .ln1,.ln2{fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}.ln1{stroke:var(--ac)}.ln2{stroke:#ef8a3c}
@@ -118,7 +131,7 @@ var PD=null,PDT=null,SD=null,LASTT='08:00',KC=0,ICE_EDIT=-1,S=null,view='home',m
 var F={type:'d',t:'08:00',n:'',date:'',days:[0,1,2,3,4,5,6],pre:true,rep:true};
 function blank(){var o={};for(var i=0;i<7;i++)o[i]={on:false,t:''};return o}
 function fix(){
- S.rem=S.rem||[];S.gs=S.gs||{};S.gs.mem=S.gs.mem||{};S.gs.c4=S.gs.c4||{};['ai','p2'].forEach(function(m){S.gs.c4[m]=S.gs.c4[m]||{x:0,o:0,d:0}});S.xo=S.xo||{};['ai','p2'].forEach(function(m){S.xo[m]=S.xo[m]||{x:0,o:0,d:0}});S.log=S.log||{};S.vitals=S.vitals||[];S.homework=S.homework||[];
+ S.rem=S.rem||[];S.eng=S.eng||{};S.gs=S.gs||{};S.gs.mem=S.gs.mem||{};S.gs.c4=S.gs.c4||{};['ai','p2'].forEach(function(m){S.gs.c4[m]=S.gs.c4[m]||{x:0,o:0,d:0}});S.xo=S.xo||{};['ai','p2'].forEach(function(m){S.xo[m]=S.xo[m]||{x:0,o:0,d:0}});S.log=S.log||{};S.vitals=S.vitals||[];S.homework=S.homework||[];
  S.vault=S.vault||{pin:'',info:''};S.ices=S.ices||[];if(!S.iceMig){if(S.ice&&S.ice.name)S.ices.push({id:Date.now(),name:S.ice.name,blood:S.ice.blood||'',allergies:S.ice.allergies||'',notes:S.ice.notes||''});S.iceMig=1}delete S.ice;
  S.eve=S.eve||{on:false,t:'20:00'};S.seq=S.seq||0;
  if(!Array.isArray(S.sos))S.sos=(S.sos&&S.sos.phone)?[{name:S.sos.name||'طوارئ',phone:S.sos.phone}]:[];
@@ -332,6 +345,107 @@ document.addEventListener('touchend',function(e){
  if(!TX||!e.changedTouches)return;var t=e.changedTouches[0],dx=t.clientX-TX[0],dy=t.clientY-TX[1];TX=null;
  if(Math.max(Math.abs(dx),Math.abs(dy))<24)return;
  g48Move(Math.abs(dx)>Math.abs(dy)?(dx<0?0:1):(dy<0?2:3))},{passive:true});
+/* ---------- English lessons ---------- */
+function L3(a,f,e){return L==='ar'?a:L==='fr'?f:e}
+function speak(t){try{if(!window.speechSynthesis)return;var u=new SpeechSynthesisUtterance(t);u.lang='en-US';u.rate=.85;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}}
+function tw(w){return L==='ar'?w[1]:L==='fr'?w[2]:''}
+function ltr(t){return'<span class="ltr">'+t+'</span>'}
+function spb(t){return'<button class="spk" data-sp="'+escp(t)+'" aria-label="sound">🔊</button>'}
+var EN={lv:'',scr:'menu',cat:'',ltr:0,gt:-1},EQ={items:[],i:0,sc:0,a:-1,done:false,key:'',ord:[],kind:''},SB={i:0,pool:[],built:[],ok:null};
+var ALPHA=[['apple','🍎','تفاحة','pomme'],['ball','⚽','كرة','ballon'],['cat','🐱','قطة','chat'],['dog','🐶','كلب','chien'],['egg','🥚','بيضة','œuf'],['fish','🐟','سمكة','poisson'],['giraffe','🦒','زرافة','girafe'],['hat','🎩','قبعة','chapeau'],['ice cream','🍦','مثلجات','glace'],['juice','🥤','عصير','jus'],['key','🔑','مفتاح','clé'],['lion','🦁','أسد','lion'],['moon','🌙','قمر','lune'],['nose','👃','أنف','nez'],['orange','🍊','برتقالة','orange'],['pizza','🍕','بيتزا','pizza'],['queen','👑','ملكة','reine'],['rabbit','🐰','أرنب','lapin'],['sun','☀️','شمس','soleil'],['tree','🌳','شجرة','arbre'],['umbrella','☂️','مظلة','parapluie'],['van','🚐','شاحنة صغيرة','camionnette'],['watch','⌚','ساعة','montre'],['box','📦','صندوق','boîte'],['yacht','⛵','يخت','yacht'],['zebra','🦓','حمار وحشي','zèbre']];
+var VOC={
+colors:{lv:'pri',n:['الألوان','Les couleurs','Colors'],i:'🎨',w:[['red','أحمر','rouge','🔴'],['blue','أزرق','bleu','🔵'],['green','أخضر','vert','🟢'],['yellow','أصفر','jaune','🟡'],['orange','برتقالي','orange','🟠'],['purple','بنفسجي','violet','🟣'],['black','أسود','noir','⚫'],['white','أبيض','blanc','⚪'],['brown','بني','marron','🟤']]},
+numbers:{lv:'pri',n:['الأرقام','Les nombres','Numbers'],i:'🔢',w:[['one','واحد','un','1'],['two','اثنان','deux','2'],['three','ثلاثة','trois','3'],['four','أربعة','quatre','4'],['five','خمسة','cinq','5'],['six','ستة','six','6'],['seven','سبعة','sept','7'],['eight','ثمانية','huit','8'],['nine','تسعة','neuf','9'],['ten','عشرة','dix','10']]},
+animals:{lv:'pri',n:['الحيوانات','Les animaux','Animals'],i:'🐶',w:[['cat','قطة','chat','🐱'],['dog','كلب','chien','🐶'],['bird','طائر','oiseau','🐦'],['fish','سمكة','poisson','🐟'],['horse','حصان','cheval','🐴'],['cow','بقرة','vache','🐮'],['lion','أسد','lion','🦁'],['elephant','فيل','éléphant','🐘'],['monkey','قرد','singe','🐵'],['rabbit','أرنب','lapin','🐰']]},
+food:{lv:'pri',n:['الفواكه والطعام','Fruits et aliments','Fruit & food'],i:'🍎',w:[['apple','تفاحة','pomme','🍎'],['banana','موزة','banane','🍌'],['grapes','عنب','raisin','🍇'],['strawberry','فراولة','fraise','🍓'],['watermelon','بطيخ','pastèque','🍉'],['bread','خبز','pain','🍞'],['milk','حليب','lait','🥛'],['egg','بيضة','œuf','🥚'],['cheese','جبن','fromage','🧀']]},
+family:{lv:'pri',n:['العائلة','La famille','Family'],i:'👨‍👩‍👧',w:[['mother','أم','mère','👩'],['father','أب','père','👨'],['sister','أخت','sœur','👧'],['brother','أخ','frère','👦'],['baby','رضيع','bébé','👶'],['grandmother','جدة','grand-mère','👵'],['grandfather','جد','grand-père','👴']]},
+school:{lv:'pri',n:['أدوات المدرسة','Le matériel scolaire','School things'],i:'🎒',w:[['book','كتاب','livre','📖'],['pen','قلم حبر','stylo','🖊️'],['pencil','قلم رصاص','crayon','✏️'],['bag','حقيبة','cartable','🎒'],['ruler','مسطرة','règle','📏'],['scissors','مقص','ciseaux','✂️'],['teacher','معلمة','enseignante','👩‍🏫'],['computer','حاسوب','ordinateur','💻']]},
+routine:{lv:'mid',n:['الروتين اليومي','La routine','Daily routine'],i:'⏰',w:[['wake up','يستيقظ','se réveiller','⏰'],['brush teeth','يفرّش أسنانه','se brosser les dents','🦷'],['have breakfast','يتناول الفطور','prendre le petit-déjeuner','🍳'],['go to school','يذهب إلى المدرسة','aller à l’école','🏫'],['do homework','يحلّ الواجب','faire les devoirs','📝'],['play football','يلعب كرة القدم','jouer au football','⚽'],['watch TV','يشاهد التلفاز','regarder la télé','📺'],['go to bed','ينام','aller se coucher','🛏️']]},
+jobs:{lv:'mid',n:['المهن','Les métiers','Jobs'],i:'👷',w:[['doctor','طبيب','médecin','👨‍⚕️'],['teacher','معلم','enseignant','👩‍🏫'],['engineer','مهندس','ingénieur','👷'],['farmer','فلاح','agriculteur','👨‍🌾'],['pilot','طيار','pilote','👨‍✈️'],['police officer','شرطي','policier','👮'],['chef','طبّاخ','cuisinier','👨‍🍳'],['artist','فنان','artiste','🎨']]},
+weather:{lv:'mid',n:['الطقس','La météo','Weather'],i:'⛅',w:[['sunny','مشمس','ensoleillé','☀️'],['rainy','ممطر','pluvieux','🌧️'],['cloudy','غائم','nuageux','☁️'],['windy','عاصف','venteux','💨'],['snowy','مثلج','neigeux','❄️'],['stormy','عاصف رعديّ','orageux','⛈️'],['hot','حار','chaud','🥵'],['cold','بارد','froid','🥶']]},
+places:{lv:'mid',n:['أماكن في المدينة','Lieux en ville','Places in town'],i:'🏙️',w:[['school','مدرسة','école','🏫'],['hospital','مستشفى','hôpital','🏥'],['park','حديقة','parc','🌳'],['market','سوق','marché','🛒'],['library','مكتبة','bibliothèque','📚'],['bank','بنك','banque','🏦'],['airport','مطار','aéroport','✈️'],['mosque','مسجد','mosquée','🕌']]},
+subjects:{lv:'mid',n:['المواد الدراسية','Les matières','School subjects'],i:'📚',w:[['maths','الرياضيات','maths','➗'],['science','العلوم','sciences','🔬'],['history','التاريخ','histoire','📜'],['geography','الجغرافيا','géographie','🌍'],['art','الرسم','arts plastiques','🎨'],['music','الموسيقى','musique','🎵'],['English','الإنجليزية','anglais','🇬🇧'],['sport','الرياضة','sport','🏃']]}};
+var PHR=[['Hello!','مرحبًا!','Bonjour !'],['Hi!','أهلًا!','Salut !'],['Good morning.','صباح الخير.','Bonjour (le matin).'],['Good afternoon.','طاب يومك (بعد الظهر).','Bon après-midi.'],['Good night.','تصبح على خير.','Bonne nuit.'],['How are you?','كيف حالك؟','Comment vas-tu ?'],['I’m fine, thank you.','أنا بخير، شكرًا.','Je vais bien, merci.'],['What’s your name?','ما اسمك؟','Comment t’appelles-tu ?'],['My name is Sara.','اسمي سارة.','Je m’appelle Sara.'],['Nice to meet you.','تشرفت بمعرفتك.','Enchanté(e).'],['Please.','من فضلك.','S’il te plaît.'],['Thank you.','شكرًا لك.','Merci.'],['You’re welcome.','عفوًا.','De rien.'],['Sorry.','آسف.','Désolé(e).'],['Goodbye!','وداعًا!','Au revoir !'],['See you tomorrow.','أراك غدًا.','À demain.']];
+var GR=[
+{n:['الفعل to be (am / is / are)','Le verbe to be (am / is / are)','The verb to be (am / is / are)'],r:['نستعمله للتعريف والوصف. I am، he / she / it is، we / you / they are.','On l’utilise pour se présenter et décrire. I am, he / she / it is, we / you / they are.','We use it to introduce and describe. I am, he / she / it is, we / you / they are.'],x:[['I am ten years old.','عمري عشر سنوات.','J’ai dix ans.'],['They are my friends.','هم أصدقائي.','Ce sont mes amis.']],q:[['She ___ a student.','is','are','am'],['They ___ my friends.','are','is','am'],['I ___ ten years old.','am','is','are'],['We ___ in the classroom.','are','am','is']]},
+{n:['المضارع البسيط','Le présent simple','Present simple'],r:['للعادات والحقائق. مع he / she / it نضيف s أو es للفعل. وللنفي: don’t أو doesn’t + الفعل الأصلي.','Pour les habitudes et les vérités. Avec he / she / it on ajoute s ou es au verbe. Négation : don’t ou doesn’t + verbe de base.','For habits and facts. With he / she / it add s or es to the verb. Negative: don’t or doesn’t + base verb.'],x:[['He plays football every Sunday.','يلعب كرة القدم كل أحد.','Il joue au football chaque dimanche.'],['She doesn’t like milk.','هي لا تحب الحليب.','Elle n’aime pas le lait.']],q:[['He ___ football every Sunday.','plays','play','playing'],['I ___ to school by bus.','go','goes','going'],['She ___ like milk.','doesn’t','don’t','isn’t'],['My mother ___ in a hospital.','works','work','working']]},
+{n:['المضارع المستمر','Le présent continu','Present continuous'],r:['لما يحدث الآن: am / is / are + الفعل مع ing.','Pour ce qui se passe maintenant : am / is / are + verbe en ing.','For what is happening now: am / is / are + verb with ing.'],x:[['She is reading a book now.','هي تقرأ كتابًا الآن.','Elle lit un livre maintenant.'],['They are playing in the garden.','هم يلعبون في الحديقة.','Ils jouent dans le jardin.']],q:[['She is ___ a book now.','reading','reads','read'],['They are ___ in the garden.','playing','play','plays'],['I am ___ my homework.','doing','do','does'],['Look! It is ___.','raining','rains','rain']]},
+{n:['الماضي البسيط','Le passé simple (past simple)','Past simple'],r:['للأحداث المنتهية في الماضي. الأفعال المنتظمة تأخذ ed (played). وبعضها شاذ: go ← went، see ← saw، eat ← ate. وللنفي: didn’t + الفعل الأصلي.','Pour des actions terminées dans le passé. Les verbes réguliers prennent ed (played). Certains sont irréguliers : go → went, see → saw, eat → ate. Négation : didn’t + verbe de base.','For finished actions in the past. Regular verbs take ed (played). Some are irregular: go → went, see → saw, eat → ate. Negative: didn’t + base verb.'],x:[['I went to the park yesterday.','ذهبت إلى الحديقة أمس.','Je suis allé au parc hier.'],['She watched TV last night.','شاهدت التلفاز ليلة أمس.','Elle a regardé la télé hier soir.']],q:[['I ___ to the park yesterday.','went','go','goed'],['She ___ TV last night.','watched','watch','watching'],['They ___ pizza for lunch.','ate','eat','eaten'],['He didn’t ___ his homework.','do','did','done']]},
+{n:['المقارنة والتفضيل','Comparatif et superlatif','Comparatives & superlatives'],r:['الصفة القصيرة: er للمقارنة (taller than) وest للتفضيل (the tallest). الصفة الطويلة: more / most. وشواذ: good ← better ← best.','Adjectif court : er pour comparer (taller than), est pour le superlatif (the tallest). Adjectif long : more / most. Irréguliers : good → better → best.','Short adjectives: er to compare (taller than), est for the superlative (the tallest). Long adjectives: more / most. Irregular: good → better → best.'],x:[['My brother is taller than me.','أخي أطول مني.','Mon frère est plus grand que moi.'],['Today is the hottest day.','اليوم هو أحرّ يوم.','Aujourd’hui est le jour le plus chaud.']],q:[['My brother is ___ than me.','taller','tall','tallest'],['This is the ___ day of the year.','hottest','hotter','hot'],['English is ___ than maths for me.','more interesting','interestinger','most interesting'],['Her marks are ___ than mine.','better','gooder','best']]},
+{n:['حروف الجر at / on / in','Prépositions at / on / in','Prepositions at / on / in'],r:['at للساعة (at 8 o’clock). on للأيام والأسطح (on Monday, on the table). in للشهور والسنوات والأماكن المغلقة (in July, in the box).','at pour l’heure (at 8 o’clock). on pour les jours et les surfaces (on Monday, on the table). in pour les mois, années et lieux fermés (in July, in the box).','at for clock times (at 8 o’clock). on for days and surfaces (on Monday, on the table). in for months, years and enclosed places (in July, in the box).'],x:[['The class starts at 8 o’clock.','يبدأ الدرس الساعة الثامنة.','Le cours commence à 8 heures.'],['My birthday is in July.','عيد ميلادي في يوليو.','Mon anniversaire est en juillet.']],q:[['The class starts ___ 8 o’clock.','at','on','in'],['My birthday is ___ July.','in','on','at'],['The book is ___ the table.','on','in','at'],['We have English ___ Monday.','on','in','at']]}];
+var SEN=[['I go to school every day.','أذهب إلى المدرسة كل يوم.','Je vais à l’école tous les jours.'],['She likes to read books.','هي تحب قراءة الكتب.','Elle aime lire des livres.'],['We are playing football now.','نحن نلعب كرة القدم الآن.','Nous jouons au football maintenant.'],['My brother is taller than me.','أخي أطول مني.','Mon frère est plus grand que moi.'],['They went to the park yesterday.','ذهبوا إلى الحديقة أمس.','Ils sont allés au parc hier.'],['Where is your bag?','أين حقيبتك؟','Où est ton cartable ?'],['He doesn’t like milk.','هو لا يحب الحليب.','Il n’aime pas le lait.'],['There are three cats on the sofa.','هناك ثلاث قطط على الأريكة.','Il y a trois chats sur le canapé.'],['Can you help me, please?','هل يمكنك مساعدتي، من فضلك؟','Peux-tu m’aider, s’il te plaît ?'],['What time does the class start?','متى يبدأ الدرس؟','À quelle heure commence le cours ?']];
+function engHub(){
+ return'<div class="card c-mint"><div class="big s17">🇬🇧 '+L3('تعلّم الإنجليزية','Apprendre l’anglais','Learn English')+'</div><div class="hint">'+L3('دروس تفاعلية مع النطق الصوتي. اختر المرحلة:','Leçons interactives avec prononciation. Choisissez le niveau :','Interactive lessons with pronunciation. Choose a level:')+'</div></div><div class="tiles"><button class="tile c-mint" data-enl="pri"><span>🌱</span>'+L3('المرحلة الابتدائية','Primaire','Primary school')+'</button><button class="tile c-sky" data-enl="mid"><span>🚀</span>'+L3('المرحلة المتوسطة','Collège','Middle school')+'</button></div><div class="hint">🔊 '+L3('النطق يعتمد على محرك الصوت في هاتفك (Text-to-speech). إن لم تسمع صوتًا فتأكد من تفعيله في إعدادات الهاتف.','La prononciation utilise la synthèse vocale de votre téléphone. Si vous n’entendez rien, vérifiez qu’elle est activée dans les réglages.','Pronunciation uses your phone’s text-to-speech. If you hear nothing, check that it is enabled in your phone settings.')+'</div>'}
+function bestOf(k,n){return S.eng[k]?' <small>'+S.eng[k]+'/'+n+'</small>':''}
+function engMenu(){
+ var pri=EN.lv==='pri',t=pri?[['alpha','🔤',L3('الحروف','L’alphabet','Alphabet'),'c-butter'],['voc','🎨',L3('الكلمات والصور','Mots et images','Words & pictures'),'c-mint'],['phr','💬',L3('تحيات وعبارات','Salutations et phrases','Greetings & phrases'),'c-peach']]:[['gram','📘',L3('القواعد','Grammaire','Grammar'),'c-butter'],['voc','📝',L3('المفردات','Vocabulaire','Vocabulary'),'c-mint'],['sent','🧩',L3('رتّب الجملة','Remets la phrase en ordre','Build the sentence'),'c-peach']];
+ var h='<div class="card c-lil"><div class="big s17">'+(pri?'🌱 '+L3('المرحلة الابتدائية','Primaire','Primary school'):'🚀 '+L3('المرحلة المتوسطة','Collège','Middle school'))+'</div></div><div class="tiles">';
+ t.forEach(function(x){h+='<button class="tile '+x[3]+'" data-ens="'+x[0]+'"><span>'+x[1]+'</span>'+x[2]+'</button>'});
+ return h+'</div>'}
+function catsOf(){return Object.keys(VOC).filter(function(c){return VOC[c].lv===EN.lv})}
+function vocQuiz(cat){var all=VOC[cat].w;return shuf(all).slice(0,8).map(function(x){var d=shuf(all.filter(function(y){return y[0]!==x[0]})).slice(0,2).map(function(y){return y[0]});return{g:0,big:x[3],sp:x[0],o:[x[0]].concat(d)}})}
+function gramQuiz(i){return GR[i].q.map(function(q){return{g:1,big:q[0],full:q[0].replace('___',q[1]),o:q.slice(1),rule:GR[i].r}})}
+function eqStart(key,items,kind){EQ={items:items,i:0,sc:0,a:-1,done:false,key:key,ord:shuf(items[0].o.map(function(_,i){return i})),kind:kind};render()}
+function eqAns(pos){
+ if(EQ.a>=0)return;EQ.a=pos;var q=EQ.items[EQ.i];if(EQ.ord[pos]===0)EQ.sc++;
+ speak(q.g?q.full:q.sp);render()}
+function eqNext(){
+ if(EQ.a<0)return;
+ if(EQ.i===EQ.items.length-1){EQ.done=true;if(EQ.sc>(S.eng[EQ.key]||0)){S.eng[EQ.key]=EQ.sc;save()}}
+ else{EQ.i++;EQ.a=-1;EQ.ord=shuf(EQ.items[EQ.i].o.map(function(_,i){return i}))}
+ render()}
+function eqScreen(){
+ var n=EQ.items.length;
+ if(EQ.done)return'<div class="card c-mint"><div class="big">'+(EQ.sc===n?'🏆 ':'🎉 ')+EQ.sc+'/'+n+'</div><div class="hint">'+(EQ.sc>=n*0.75?L3('أحسنت! أداء رائع.','Bravo ! Excellent travail.','Well done! Great work.'):L3('حاول مرة أخرى، التكرار يصنع الإتقان.','Réessaie : en répétant on progresse.','Try again: practice makes perfect.'))+'</div><button class="btn p" data-eqs="'+EQ.kind+'" style="width:100%">'+L3('أعد الاختبار','Refaire l’exercice','Try again')+'</button></div>';
+ var q=EQ.items[EQ.i],h='<div class="card"><div class="hint">'+L3('السؤال','Question','Question')+' '+(EQ.i+1)+'/'+n+(q.g?'':' · '+L3('ما اسم هذا بالإنجليزية؟','Comment dit-on cela en anglais ?','What is this in English?'))+'</div>';
+ h+=q.g?'<div class="gq">'+ltr(escp(q.big))+'</div>':'<div class="bq">'+q.big+(q.sp?spb(q.sp):'')+'</div>';
+ EQ.ord.forEach(function(oi,pos){var cls=EQ.a<0?'':(oi===0?' ok':(pos===EQ.a?' bad':''));h+='<button class="qo'+cls+'" data-eqa="'+pos+'"'+(EQ.a>=0?' disabled':'')+'>'+ltr(escp(q.o[oi]))+'</button>'});
+ if(EQ.a>=0){
+  if(q.g)h+='<div class="hint">'+(EQ.ord[EQ.a]===0?'✅ ':'💡 ')+ltr(escp(q.full))+spb(q.full)+'</div>'+(EQ.ord[EQ.a]!==0?'<div class="hint">'+q.rule[{ar:0,fr:1,en:2}[L]]+'</div>':'');
+  h+='<button class="btn p" data-eqn="1" style="width:100%">'+(EQ.i===n-1?L3('النتيجة','Résultat','Result'):L3('التالي','Suivant','Next'))+'</button>'}
+ return h+'</div>'}
+function alphaView(){
+ var l=EN.ltr,a=ALPHA[l],h='<div class="card c-butter"><div class="big s17">🔤 '+L3('الحروف الإنجليزية','L’alphabet anglais','The English alphabet')+'</div><div class="al">';
+ ALPHA.forEach(function(x,i){h+='<button data-ltr="'+i+'"'+(i===l?' class="a"':'')+'>'+String.fromCharCode(65+i)+'</button>'});
+ h+='</div></div><div class="card"><div class="big-l">'+String.fromCharCode(65+l)+' '+String.fromCharCode(97+l)+'</div><div class="bq">'+a[1]+'</div><div class="gq">'+ltr(escp(a[0]))+spb(String.fromCharCode(65+l)+'. '+a[0])+'</div>';
+ if(tw([0,a[2],a[3]]))h+='<div class="hint" style="text-align:center">'+tw([0,a[2],a[3]])+'</div>';
+ if(l===23)h+='<div class="hint" style="text-align:center">X '+L3('كما في آخر كلمة box','comme à la fin de box','as in the end of box')+'</div>';
+ return h+'<div class="hint" style="text-align:center">'+L3('اضغط 🔊 لتسمع الحرف والكلمة','Touchez 🔊 pour écouter la lettre et le mot','Tap 🔊 to hear the letter and the word')+'</div></div>'}
+function vocView(){
+ var cs=catsOf();if(cs.indexOf(EN.cat)<0)EN.cat=cs[0];
+ var k={ar:0,fr:1,en:2}[L],c=VOC[EN.cat],h='<div class="card c-mint"><div class="chips">';
+ cs.forEach(function(id){h+=chip('data-ecat="'+id+'"',VOC[id].i+' '+VOC[id].n[k],EN.cat===id)});
+ h+='</div><div class="hint">'+L3('اضغط على البطاقة لتسمع النطق','Touchez une carte pour écouter la prononciation','Tap a card to hear the pronunciation')+'</div></div><div class="wc">';
+ c.w.forEach(function(w){h+='<button class="wcd" data-sp="'+escp(w[0])+'"><span class="e">'+w[3]+'</span><b>'+ltr(escp(w[0]))+'</b>'+(tw(w)?'<small>'+tw(w)+'</small>':'')+'</button>'});
+ return h+'</div><button class="btn p mt" data-eqs="voc" style="width:100%">🎯 '+L3('اختبر نفسك','Teste-toi','Quiz yourself')+bestOf('voc_'+EN.cat,Math.min(8,c.w.length))+'</button>'}
+function phrView(){
+ var h='<div class="card c-peach"><div class="big s17">💬 '+L3('تحيات وعبارات','Salutations et phrases','Greetings & phrases')+'</div>';
+ PHR.forEach(function(p){h+='<div class="row"><span class="sub" style="color:inherit"><b>'+ltr(escp(p[0]))+'</b>'+(tw([0,p[1],p[2]])?'<br>'+tw([0,p[1],p[2]]):'')+'</span>'+spb(p[0])+'</div>'});
+ return h+'</div>'}
+function gramView(){
+ var k={ar:0,fr:1,en:2}[L],h='';
+ if(EN.gt<0){h+='<div class="card c-butter"><div class="big s17">📘 '+L3('اختر موضوعًا','Choisissez un thème','Pick a topic')+'</div></div>';GR.forEach(function(g,i){h+='<button class="qo" data-egt="'+i+'">'+g.n[k]+bestOf('gram_'+i,4)+'</button>'});return h}
+ var g=GR[EN.gt];
+ h+='<div class="card c-butter"><div class="big s17">📘 '+g.n[k]+'</div><div class="hint">'+g.r[k]+'</div></div><div class="card"><b>'+L3('أمثلة','Exemples','Examples')+'</b>';
+ g.x.forEach(function(x){h+='<div class="row"><span class="sub" style="color:inherit"><b>'+ltr(escp(x[0]))+'</b>'+(tw([0,x[1],x[2]])?'<br>'+tw([0,x[1],x[2]]):'')+'</span>'+spb(x[0])+'</div>'});
+ return h+'</div><button class="btn p" data-eqs="gram" style="width:100%">🎯 '+L3('تمرّن (4 أسئلة)','Exercice (4 questions)','Practice (4 questions)')+bestOf('gram_'+EN.gt,4)+'</button>'}
+function sbNew(){var w=SEN[SB.i%SEN.length][0].split(' ');SB.pool=shuf(w.map(function(x){return{w:x,u:false}}));SB.built=[];SB.ok=null}
+function sbCheck(){if(SB.built.length===SB.pool.length){SB.ok=SB.built.map(function(b){return SB.pool[b].w}).join(' ')===SEN[SB.i%SEN.length][0];if(SB.ok)speak(SEN[SB.i%SEN.length][0])}}
+function sentView(){
+ if(!SB.pool.length)sbNew();
+ var s=SEN[SB.i%SEN.length],h='<div class="card c-peach"><div class="big s17">🧩 '+L3('رتّب الكلمات لتكوّن الجملة','Remets les mots dans l’ordre','Put the words in order')+'</div>'+(tw([0,s[1],s[2]])?'<div class="hint">'+tw([0,s[1],s[2]])+'</div>':'')+'<div class="sbox">';
+ SB.built.forEach(function(b,i){h+='<button class="wch" data-esu="'+i+'">'+ltr(escp(SB.pool[b].w))+'</button>'});
+ h+='</div><div class="chips">';
+ SB.pool.forEach(function(p,i){if(!p.u)h+='<button class="wch" data-esw="'+i+'">'+ltr(escp(p.w))+'</button>'});
+ h+='</div>';
+ if(SB.ok===true)h+='<div class="xst">🎉 '+L3('صحيح!','Correct !','Correct!')+'</div><button class="btn p" data-esn="1" style="width:100%">'+L3('الجملة التالية','Phrase suivante','Next sentence')+'</button>';
+ else if(SB.ok===false)h+='<div class="hint wr">'+L3('ليست صحيحة بعد، اضغط على كلمة لإرجاعها وحاول مجددًا.','Pas encore correct : touchez un mot pour le retirer et réessayez.','Not right yet: tap a word to remove it and try again.')+'</div>';
+ return h+'</div>'}
+function engView(){
+ if(!EN.lv)return engHub();
+ if(EQ.items.length)return eqScreen();
+ if(EN.scr==='menu')return engMenu();
+ return EN.scr==='alpha'?alphaView():EN.scr==='voc'?vocView():EN.scr==='phr'?phrView():EN.scr==='gram'?gramView():sentView()}
 function kidForm(){return'<div class="row"><input type="text" id="kid_name" placeholder="اسم الابن (مثلاً: سارة)"></div><p class="hint">اختر نوع الأسبوع الحالي عنده، وسيتناوب التطبيق تلقائيًا بعده: أ ← ب ← أ …</p><div class="tabs"><button data-set="A">'+N.A+'</button><button data-set="B">'+N.B+'</button></div>'}
 function due(r,d){
  if(r.date)return dk(d)===r.date;
@@ -346,6 +460,8 @@ function tt(r){return r.w?'⏰ '+r.w:tr('⏰ تذكير')}
 
 /* ---------- i18n ---------- */
 var TR=[
+["رجوع","Retour","Back"],
+["الدروس","Leçons","Lessons"],
 ["اختر لعبة","Choisissez un jeu","Pick a game"],
 ["ذاكرة الصور","Mémoire","Memory"],
 ["تحدي الحساب","Défi de calcul","Math challenge"],
@@ -677,7 +793,7 @@ function homeView(now,t){
   h+='<div class="row'+(i===0?' today':'')+'"><span class="dot'+(any?'':' o')+'"></span><span class="day">'+D[d2.getDay()]+'</span><span class="sub">'+d2.getDate()+'/'+(d2.getMonth()+1)+' · '+sts.map(function(z){return(S.kids.length>1?esc(z.k.name)+' ':'')+(z.x.on?'يدرس'+(ltxt(z.x)?' — '+esc(ltxt(z.x)):''):'عطلة')}).join(' | ')+'</span></div>'}
  return h+'</div>'}
 function moreView(){
- var h='<div class="tiles"><button class="tile c-peach" data-v="vitals"><span>📊</span>القياسات</button><button class="tile c-sky" data-v="vault"><span>🔒</span>الصندوق</button><button class="tile c-coral" data-v="em"><span>🚨</span>الطوارئ</button><button class="tile c-lil" data-v="set"><span>⚙️</span>الإعدادات</button><button class="tile c-butter" data-v="games"><span>🎮</span>الألعاب</button></div>';
+ var h='<div class="tiles"><button class="tile c-peach" data-v="vitals"><span>📊</span>القياسات</button><button class="tile c-sky" data-v="vault"><span>🔒</span>الصندوق</button><button class="tile c-coral" data-v="em"><span>🚨</span>الطوارئ</button><button class="tile c-lil" data-v="set"><span>⚙️</span>الإعدادات</button><button class="tile c-butter" data-v="games"><span>🎮</span>الألعاب</button><button class="tile c-sky" data-v="lessons"><span>🎓</span>الدروس</button></div>';
  h+='<div class="card mt"><div class="big s17">🎨 المظهر</div><div class="sw">';
  [['lilac','#6c4cf1'],['rose','#d6336c'],['mint','#0f7f61'],['sea','#2f6df0']].forEach(function(x){h+='<button data-theme="'+x[0]+'" style="background:'+x[1]+'" class="'+((S.theme||'lilac')===x[0]?'sel':'')+'" aria-label="'+x[0]+'"></button>'});
  return h+'</div></div>'}
@@ -812,13 +928,13 @@ function render(){
  if(!S.kids.length){
   el.innerHTML=tr('<h1>Remind me</h1>'+langBar()+'<div class="card c-lil"><div class="big">أضف ابنك الأول</div>'+kidForm()+'</div>');
   return}
- var now=new Date(),t=S.kids.length===1?wt(now,S.kids[0]):'',sub=['vitals','vault','em','set','games'].indexOf(view)>=0,gm=['xo','g_mem','g_math','g_48','g_c4'].indexOf(view)>=0;
+ var now=new Date(),t=S.kids.length===1?wt(now,S.kids[0]):'',sub=['vitals','vault','em','set','games','lessons'].indexOf(view)>=0,gm=['xo','g_mem','g_math','g_48','g_c4'].indexOf(view)>=0,ls=(view==='lessons'&&!!EN.lv);
  var h='<div class="top"><div><div class="hi">'+(now.getHours()<12?'صباح الخير':'مساء الخير')+'</div><div class="nm">Remind me</div></div>'+(t?'<span class="wkb">'+N[t]+'</span>':'')+'</div>';
  if(view==='ked')h+='<button class="btn" data-v="sch" style="width:100%;margin-bottom:12px">'+(L==='ar'?'→':'←')+' الجدول</button>';
- if(sub||gm)h+='<button class="btn" data-v="'+(gm?'games':'more')+'" style="width:100%;margin-bottom:12px">'+(L==='ar'?'→':'←')+' '+(gm?'الألعاب':'المزيد')+'</button>';
- h+=view==='home'?homeView(now,t):view==='sch'?schView():view==='ked'?kedView():view==='rem'?remView():view==='hw'?hwView():view==='more'?moreView():view==='vitals'?vitalsView():view==='vault'?vaultView():view==='em'?emView():view==='xo'?xoView():view==='games'?gamesView():view==='g_mem'?memView():view==='g_math'?mathView():view==='g_48'?g48View():view==='g_c4'?c4View():setView();
+ if(sub||gm||ls){var bk=gm?['games','الألعاب']:ls?['enb','رجوع']:['more','المزيد'];h+='<button class="btn" '+(bk[0]==='enb'?'data-enb="1"':'data-v="'+bk[0]+'"')+' style="width:100%;margin-bottom:12px">'+(L==='ar'?'→':'←')+' '+bk[1]+'</button>'}
+ h+=view==='home'?homeView(now,t):view==='sch'?schView():view==='ked'?kedView():view==='rem'?remView():view==='hw'?hwView():view==='more'?moreView():view==='vitals'?vitalsView():view==='vault'?vaultView():view==='em'?emView():view==='xo'?xoView():view==='games'?gamesView():view==='g_mem'?memView():view==='g_math'?mathView():view==='g_48'?g48View():view==='g_c4'?c4View():view==='lessons'?engView():setView();
  h+='<nav class="nav">';
- [['home','🏠','الرئيسية'],['sch','📅','الجدول'],['rem','⏰','التذكيرات'],['hw','📚','الواجبات'],['more','✨','المزيد']].forEach(function(x){h+='<button data-v="'+x[0]+'" class="'+((view===x[0]||(x[0]==='more'&&(sub||gm))||(x[0]==='sch'&&view==='ked'))?'a':'')+'"><span>'+x[1]+'</span>'+x[2]+'</button>'});
+ [['home','🏠','الرئيسية'],['sch','📅','الجدول'],['rem','⏰','التذكيرات'],['hw','📚','الواجبات'],['more','✨','المزيد']].forEach(function(x){h+='<button data-v="'+x[0]+'" class="'+((view===x[0]||(x[0]==='more'&&(sub||gm||ls))||(x[0]==='sch'&&view==='ked'))?'a':'')+'"><span>'+x[1]+'</span>'+x[2]+'</button>'});
  el.innerHTML=tr(h+'</nav>')}
 function val(id){var e=document.getElementById(id);return e?e.value:''}
 function delRem(id){
@@ -851,6 +967,19 @@ document.addEventListener('click',function(ev){
    dd2.on=true;LASTT=tt2||ff||'08:00';save();render();schedEve()}
   else if(q.dl){var kl=q.dl.split(','),d3=S.kids[KC].weeks[kl[0]][+kl[1]];d3.ls.splice(+kl[2],1);save();render();schedEve()}
   else if(q.v){gStop();view=q.v;PD=null;if(q.v==='g_mem'&&!MM.c.length)MM.n=MM.n||6;if(q.v==='g_48'&&!G48.b.length)g48New();render();if(q.v==='xo')xKick();if(q.v==='g_c4')c4Kick()}
+  else if(q.enl){EN.lv=q.enl;EN.scr='menu';EQ.items=[];render()}
+  else if(q.enb){if(EQ.items.length)EQ.items=[];else if(EN.scr==='gram'&&EN.gt>=0)EN.gt=-1;else if(EN.scr!=='menu')EN.scr='menu';else EN.lv='';render()}
+  else if(q.ens){EN.scr=q.ens;EN.gt=-1;if(q.ens==='sent'){SB.i=0;sbNew()}render()}
+  else if(q.ecat){EN.cat=q.ecat;render()}
+  else if(q.ltr!==undefined){EN.ltr=+q.ltr;render();var a0=ALPHA[EN.ltr];speak(String.fromCharCode(65+EN.ltr)+'. '+a0[0])}
+  else if(q.sp)speak(q.sp)
+  else if(q.egt!==undefined){EN.gt=+q.egt;render()}
+  else if(q.eqs){if(q.eqs==='voc')eqStart('voc_'+EN.cat,vocQuiz(EN.cat),'voc');else eqStart('gram_'+EN.gt,gramQuiz(EN.gt),'gram')}
+  else if(q.eqa!==undefined)eqAns(+q.eqa)
+  else if(q.eqn)eqNext()
+  else if(q.esw!==undefined){var pw=SB.pool[+q.esw];if(pw&&!pw.u&&SB.ok!==true){pw.u=true;SB.built.push(+q.esw);SB.ok=null;sbCheck();render()}}
+  else if(q.esu!==undefined){if(SB.ok!==true){var bi=SB.built.splice(+q.esu,1)[0];if(bi!==undefined)SB.pool[bi].u=false;SB.ok=null;render()}}
+  else if(q.esn){SB.i++;sbNew();render()}
   else if(q.mf!==undefined)mFlip(+q.mf)
   else if(q.ml)mNew(+q.ml)
   else if(q.go){GM.op=q.go;render()}
@@ -888,9 +1017,7 @@ document.addEventListener('click',function(ev){
    S.homework.push({title:title,subject:sj,dueDate:dd,t:tm,rid:r2.id});S.rem.push(r2);save();render();schedRem(r2)}
   else if(q.delhw!==undefined){var hw=S.homework[+q.delhw];if(hw)delRem(hw.rid);else S.homework.splice(+q.delhw,1);save();render()}
   else if(q.setpin){var pin=val('new_pin');if(pin.length>=4){S.vault.pin=pin;vaultUnlocked=true;save();render()}else alert('4 أرقام على الأقل')}
-  else if(q.unlock){if(val('enter_pin')===S.vault.pin){vaultUnlocked=true;render()}else alert('كود سري خاطئ!')}
-  else if(q.lock){vaultUnlocked=false;render()}
-  else if(q.savevault){S.vault.info=val('vault_info');save();alert('تم الحفظ')}
+  else if(q.unlock){if(val('enter_pin')===S.vault.pin){vault_info');save();alert('تم الحفظ')}
   else if(q.addsos){var nm=val('sos_name').trim(),ph=val('sos_phone').trim();if(!ph){alert('أدخل رقم الهاتف');return}S.sos.push({name:nm||tr('طوارئ'),phone:ph});save();render()}
   else if(q.delsos!==undefined){S.sos.splice(+q.delsos,1);save();render()}
   else if(q.saveice){
